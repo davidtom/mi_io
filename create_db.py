@@ -1,0 +1,142 @@
+"""
+Module Purpose: Creates database, tables, and constraints that will contain
+all data pulled from clinicaltrials.gov using sqlite3
+
+input: none
+output: sqlite3 database
+"""
+
+import sqlite3
+
+def create_database():
+    conn = sqlite3.connect("main_db.sqlite3")
+    curr = conn.cursor()
+
+
+    curr.executescript('''
+    CREATE TABLE IF NOT EXISTS Trials (
+        nct_id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+        phase INTEGER,
+        status TEXT,
+        study_type_id INTEGER,
+        study_design_id INTEGER,
+        start_date TEXT,
+        completion_date TEXT,
+        primary_completion_date TEXT,
+        verification_date TEXT,
+        last_changed_date TEXT,
+        sponsor_id INTEGER,
+        index_date TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS Study_Type (
+    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    study_type TEXT UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS Study_Design (
+    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    study_design TEXT UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS Sponsor (
+    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    sponsor_name TEXT UNIQUE,
+    sponsor_type_id INTEGER
+    );
+
+    CREATE TABLE IF NOT EXISTS Phases (
+    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    phase TEXT UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS Sponsor_Type (
+    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    sponsor_type TEXT UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS Country (
+    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    country TEXT UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS Country_Link (
+    country_id INTEGER,
+    nct_id INTEGER,
+    PRIMARY KEY (country_id, nct_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS Conditions (
+    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    condition TEXT UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS Conditions_Link (
+    condition_id INTEGER,
+    nct_id INTEGER,
+    PRIMARY KEY (condition_id, nct_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS Interventions (
+    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    intervention TEXT UNIQUE,
+    intervention_type_id INTEGER,
+    moa_id INTEGER
+    );
+
+    CREATE TABLE IF NOT EXISTS Interventions_Link (
+    intervention_id INTEGER,
+    nct_id INTEGER,
+    PRIMARY KEY (intervention_id, nct_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS Intervention_Type (
+    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    intervention_type TEXT UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS MoA (
+    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    moa TEXT UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS Intervention_Other_Names (
+    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    other_name TEXT UNIQUE,
+    intervention_id INTEGER
+    );
+
+    CREATE TABLE IF NOT EXISTS Study_Arms (
+    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    nct_id INTEGER,
+    arm_label TEXT,
+    CONSTRAINT trial_arm UNIQUE (nct_id, arm_label)
+    );
+
+    CREATE TABLE IF NOT EXISTS Study_Arms_Link (
+    study_arm_id INTEGER,
+    intervention_id INTEGER,
+    PRIMARY KEY (study_arm_id, intervention_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS Endpoints (
+    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    endpoint_type INTEGER,
+    endpoint TEXT,
+    CONSTRAINT endpoint_tier UNIQUE (endpoint_type, endpoint)
+    );
+
+    CREATE TABLE IF NOT EXISTS Endpoint_Link (
+    endpoint_id INTEGER,
+    nct_id INTEGER,
+    PRIMARY KEY (endpoint_id, nct_id)
+    );
+
+    ''')
+
+##If this module is run as the main program (not imported into another module)
+## this code will run (because __name__  is set to "__main__"). If the file is
+## being imported from another module __name__ will be set to the modeules's
+## name (and code below does not run)
+if __name__ == "__main__":
+    create_database()
