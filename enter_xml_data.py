@@ -8,7 +8,7 @@ import re
 import create_trial as CT
 
 #Enter files accessed in module
-dbname = 'maindb.sqlite3'
+dbname = 'main_db.sqlite3'
 foldername = 'test_xml_folder'
 folderpath = os.getcwd() + '/' + foldername +'/'
 
@@ -99,7 +99,30 @@ for xml in get_nct_list(folderpath):
 
     country = active_trial.get_country()
 
-    print lead_sponsor
+    print lead_sponsor_type
+
+    #Enter lead_sponsor_type into Sponsor_Type Table in main_db.sqlite3
+    cur.execute("""
+    INSERT OR IGNORE INTO Sponsor_Type (sponsor_type)
+    VALUES (?)""", (lead_sponsor_type, ))
+    cur.execute('SELECT id FROM Sponsor_Type WHERE sponsor_type = ?',
+        (lead_sponsor_type, ))
+    sponsor_type_id = cur.fetchone()[0]
+    print sponsor_type_id
+
+    # #TRY TO CREATE A FUNCTION
+    # def test_insert_outertable(table_name, column_name, attribute):
+    #     cur.execute("""
+    #     INSERT OR IGNORE INTO ? (?)
+    #     VALUES (?)""", (table_name, column_name, attribute))
+    #     cur.execute('SELECT id FROM ? WHERE ? = ?',
+    #         (table_name, sponsor_type, attribute, ))
+    #     return cur.fetchone()[0]
+    #
+    # sponsor_type_id = test_insert_outertable('Sponsor_Type', 'sponsor_type', lead_sponsor_type)
+
+    conn.commit()
+
 
 # if  __name__ == "__main__":
 #     print insert_from_xml(folderpath)
