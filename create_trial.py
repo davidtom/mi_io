@@ -245,7 +245,7 @@ class Trial(object):
     def find_intervention(self, root):
         """Returns a tuple of dictionaries. Each dictionary contains the
         following information on a single, unique intervention:
-        intervention_name, type, study_arm, and other_name. """
+        intervention_name, type, study_arm, and other_name"""
 
         #Create list that will store intervention dicts (will be returned as a tuple)
         intervention_list = list()
