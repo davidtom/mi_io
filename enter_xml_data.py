@@ -5,7 +5,9 @@ it into a database (defined in module); for use with first data pull only(?).
 import sqlite3
 import os
 import re
+import csv
 import create_trial as CT
+import condition_buckets as cb
 
 #Enter files accessed in module
 dbname = 'main_db.sqlite3'
@@ -58,11 +60,6 @@ def insert_2column_table(table_name, column_name, attribute):
     VALUES (?)""".format(table_name, column_name), (attribute, ))
     cur.execute('SELECT id FROM {} WHERE {} = ?'.format(table_name, column_name), (attribute, ))
     return cur.fetchone()[0]
-
-# def insert_from_xml(folderpath):
-#     """TO BE COMPLETED - reads data from a folder containing xmls files and enters
-#     it into a database (defined in module); for use with first data pull only(?).
-#     """
 
 #Iterate through all nct*.xml files in the folderpath
 for xml in get_nct_list(folderpath):
@@ -133,9 +130,8 @@ for xml in get_nct_list(folderpath):
     #Iterate through tuple of conditions in trial and input each into Conditions table
     #also store each corresponding id and enter it into Conditions_Link table, along with nct_id
     for item in condition:
-        condition_id = insert_2column_table('Conditions', 'condition', item)
+        condition_id = insert_2column_table('Conditions', 'condition', cb.bucket_condition(item))
 
-        ##TO DO: conditions like NSCLC and RCC are listed in multiple ways. Need to bucket these now
         ##TO DO: populate Conditions_Link table
 
 
@@ -143,7 +139,3 @@ for xml in get_nct_list(folderpath):
     ####
 
     conn.commit()
-
-
-# if  __name__ == "__main__":
-#     print insert_from_xml(folderpath)
