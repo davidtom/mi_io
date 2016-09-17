@@ -140,6 +140,7 @@ for xml in get_nct_list(folderpath):
 
 
     #Intervention dict info to enter: intervention_name, type, study_arm, and other_name
+    ####
 
     conn.commit()
 
