@@ -9,6 +9,7 @@ import csv
 import create_trial as CT
 import condition_buckets as cb
 
+
 #Enter files accessed in module
 dbname = 'main_db.sqlite3'
 foldername = 'test_xml_folder'
@@ -34,6 +35,7 @@ def get_nct_list(folderpath):
 
     return nct_list
 
+
 #Define function to get methods from a class to make variable assignment easier
 def get_methods():
     """Prints a string that can be used to assign all Trial variables using
@@ -50,6 +52,7 @@ def get_methods():
         print i + ' = ' + 'active_trial.' + i + '()'
         print '\n'
 
+
 #Define function that inputs data into a table with 2 columns (id and a table-specific value),
 #and returns a particular value's id (primary key)
 def insert_2column_table(table_name, column_name, attribute):
@@ -60,6 +63,16 @@ def insert_2column_table(table_name, column_name, attribute):
     VALUES (?)""".format(table_name, column_name), (attribute, ))
     cur.execute('SELECT id FROM {} WHERE {} = ?'.format(table_name, column_name), (attribute, ))
     return cur.fetchone()[0]
+
+
+#Define a function that inputs data into a link table. Utilizes a value's id (primary key)
+#returned from a previous insert function
+def insert_link_table(table_name, column1, column2, attribute1, attribute2):
+        cur.execute('''INSERT OR REPLACE INTO {}
+            ({}, {}) VALUES ( ?, ? )'''.format(table_name, column1, column2),
+            (attribute1, attribute2))
+        return None
+
 
 #Iterate through all nct*.xml files in the folderpath
 for xml in get_nct_list(folderpath):
@@ -124,15 +137,14 @@ for xml in get_nct_list(folderpath):
     #also store each corresponding id and enter it into Country_Link table, along with nct_id
     for item in country:
         country_id = insert_2column_table('Country', 'country', item)
+        insert_link_table('Country_Link', 'country_id', 'nct_id', country_id, nct)
 
-        ##TO DO: Populate Country_Link table
 
     #Iterate through tuple of conditions in trial and input each into Conditions table
     #also store each corresponding id and enter it into Conditions_Link table, along with nct_id
     for item in condition:
         condition_id = insert_2column_table('Conditions', 'condition', cb.bucket_condition(item))
-
-        ##TO DO: populate Conditions_Link table
+        insert_link_table('Conditions_Link', 'condition_id', 'nct_id', condition_id, nct)
 
 
     #Intervention dict info to enter: intervention_name, type, study_arm, and other_name
