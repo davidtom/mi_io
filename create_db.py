@@ -15,7 +15,7 @@ def create_database():
 
     curr.executescript('''
     CREATE TABLE IF NOT EXISTS Trials (
-        nct_id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+        nct_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
         phase INTEGER,
         status TEXT,
         study_type_id INTEGER,
@@ -30,33 +30,33 @@ def create_database():
     );
 
     CREATE TABLE IF NOT EXISTS Study_Type (
-    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     study_type TEXT UNIQUE
     );
 
     CREATE TABLE IF NOT EXISTS Study_Design (
-    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     study_design TEXT UNIQUE
     );
 
     CREATE TABLE IF NOT EXISTS Sponsor (
-    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     sponsor_name TEXT UNIQUE,
     sponsor_type_id INTEGER
     );
 
     CREATE TABLE IF NOT EXISTS Phases (
-    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     phase TEXT UNIQUE
     );
 
     CREATE TABLE IF NOT EXISTS Sponsor_Type (
-    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     sponsor_type TEXT UNIQUE
     );
 
     CREATE TABLE IF NOT EXISTS Country (
-    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     country TEXT UNIQUE
     );
 
@@ -67,7 +67,7 @@ def create_database():
     );
 
     CREATE TABLE IF NOT EXISTS Conditions (
-    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     condition TEXT UNIQUE
     );
 
@@ -78,7 +78,7 @@ def create_database():
     );
 
     CREATE TABLE IF NOT EXISTS Interventions (
-    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     intervention TEXT UNIQUE,
     intervention_type_id INTEGER,
     moa_id INTEGER
@@ -91,23 +91,23 @@ def create_database():
     );
 
     CREATE TABLE IF NOT EXISTS Intervention_Type (
-    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     intervention_type TEXT UNIQUE
     );
 
     CREATE TABLE IF NOT EXISTS MoA (
-    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     moa TEXT UNIQUE
     );
 
     CREATE TABLE IF NOT EXISTS Intervention_Other_Names (
-    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     other_name TEXT UNIQUE,
     intervention_id INTEGER
     );
 
     CREATE TABLE IF NOT EXISTS Study_Arms (
-    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     nct_id INTEGER,
     arm_label TEXT,
     CONSTRAINT trial_arm UNIQUE (nct_id, arm_label)
@@ -120,7 +120,7 @@ def create_database():
     );
 
     CREATE TABLE IF NOT EXISTS Endpoints (
-    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     endpoint_type INTEGER,
     endpoint TEXT,
     CONSTRAINT endpoint_tier UNIQUE (endpoint_type, endpoint)
