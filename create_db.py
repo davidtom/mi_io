@@ -86,8 +86,8 @@ def create_database():
 
     CREATE TABLE IF NOT EXISTS Interventions_Link (
     intervention_id INTEGER,
-    nct_id INTEGER,
-    PRIMARY KEY (intervention_id, nct_id)
+    study_arm_id INTEGER,
+    PRIMARY KEY (intervention_id, study_arm_id)
     );
 
     CREATE TABLE IF NOT EXISTS Intervention_Type (
@@ -115,8 +115,8 @@ def create_database():
 
     CREATE TABLE IF NOT EXISTS Study_Arms_Link (
     study_arm_id INTEGER,
-    intervention_id INTEGER,
-    PRIMARY KEY (study_arm_id, intervention_id)
+    nct_id INTEGER,
+    PRIMARY KEY (study_arm_id, nct_id)
     );
 
     CREATE TABLE IF NOT EXISTS Endpoints (
