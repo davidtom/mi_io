@@ -15,7 +15,7 @@ def create_database():
 
     curr.executescript('''
     CREATE TABLE IF NOT EXISTS Trials (
-        nct_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+        nct_id INTEGER NOT NULL PRIMARY KEY UNIQUE,
         phase_id INTEGER,
         status TEXT,
         study_type_id INTEGER,
