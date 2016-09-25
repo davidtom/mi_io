@@ -88,9 +88,9 @@ def insert_4column_table(table_name, column_name1, attribute1,
 
 #Define a function that inputs data into a link table. Utilizes a value's id (primary key)
 #returned from a previous insert function
-def insert_link_table(table_name, column1, column2, attribute1, attribute2):
+def insert_link_table(table_name, column_name1, attribute1, column_name2, attribute2):
         cur.execute('''INSERT OR REPLACE INTO {}
-            ({}, {}) VALUES ( ?, ? )'''.format(table_name, column1, column2),
+            ({}, {}) VALUES ( ?, ? )'''.format(table_name, column_name1, column_name2),
             (attribute1, attribute2))
         return None
 
@@ -164,19 +164,15 @@ for xml in get_nct_list(folderpath):
     #also store each corresponding id and enter it into Country_Link table, along with nct_id
     for item in country:
         country_id = insert_2column_table('Country', 'country', item)
-        insert_link_table('Country_Link', 'country_id', 'nct_id', country_id, nct)
+        insert_link_table('Country_Link', 'country_id', country_id, 'nct_id', nct)
 
 
     #Iterate through tuple of conditions in trial and insert each into Conditions table
     #also store each corresponding id and enter it into Conditions_Link table, along with nct_id
     for item in condition:
         condition_id = insert_2column_table('Conditions', 'condition', cb.bucket_condition(item))
-        insert_link_table('Conditions_Link', 'condition_id', 'nct_id', condition_id, nct)
+        insert_link_table('Conditions_Link', 'condition_id', condition_id, 'nct_id', nct)
 
-
-    ###Debug code, delete later
-    # print 'nct number::', nct
-    # print 'intervention:\n', intervention_details
 
     #Iterate through dicts contained within intervention_details (1 dict per intervention)
     for item in intervention_details:
@@ -200,7 +196,7 @@ for xml in get_nct_list(folderpath):
             'other_name', name,
             'intervention_id', intervention_id)
 
-    # Input data into Trials table
+    #Insert data into Trials table
     cur.execute("""INSERT OR IGNORE INTO Trials (nct_id,
                                                 phase_id,
                                                 status,
@@ -224,9 +220,19 @@ for xml in get_nct_list(folderpath):
                                                     last_changed_date,
                                                     sponsor_id))
 
-    ###Debug code, delete later
-    #print '---'
+    #Iterate through trials' primary_endpoint tuple and insert each into Endpoints table
+    #also store each corresponding id and enter it Endpoint_Link table, along with nct_id
+    print 'Trial: {}'.format(nct)
 
+    for item in primary_endpoint:
+        print '*', item
+        endpoint_id = insert_3column_table('Endpoints',
+                                            'endpoint_type', 1,
+                                            'endpoint', item)
+        insert_link_table('Endpoint_Link',
+                            'endpoint_id', endpoint_id, 'nct_id', nct)
+
+    print '--- \n'
 
     #Tuple of dicts, each dict represents the info for one intervention in the trial (strings AND tuples are values)
 
