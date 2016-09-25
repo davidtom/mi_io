@@ -21,18 +21,29 @@ class Trial(object):
     # to create date tuples (year#, month#) to store date variables
     months_dict = dict((v,k) for k,v in enumerate(calendar.month_name))
 
+    ##Convert values (integers) in months_dict to be double digit
+    for i in months_dict.keys():
+        if len(str(months_dict[i])) < 2:
+            months_dict[i] = int('%02d'%months_dict[i])
+
     ##Define class functions
     def parse_xml(self, xml_file):
         return ET.parse(xml_file).getroot()
 
+    #Function to retrieve a trial's filename:
+    def get_file_name(self):
+        return self.file_name
+
     #Functions to store and retrieve: NCT Number
     def find_nct(self, root):
-        try:
+        # try:
             nct_id = root.find('id_info/nct_id').text
+
             nct_number = int(re.findall('[0-9]+', nct_id)[0])
-            return nct_number
-        except AttributeError:
-            return None
+            return '%08d'%nct_number
+
+        # except AttributeError:
+        #     return None
 
     def get_nct(self):
         return self.nct_number
@@ -79,10 +90,11 @@ class Trial(object):
 
     #Functions to store and retrieve: trial start date
     def find_start_date(self, root):
+        """Initially as YYYY-MM format, but assumes DD is 01 to allow
+        creation as a datetime object"""
         try:
             raw_date = root.find('start_date').text.split()
-            date_tuple = (int(raw_date[1]), self.months_dict[raw_date[0]])
-            return date_tuple
+            return datetime.date(int(raw_date[1]), self.months_dict[raw_date[0]], 01)
         except AttributeError:
             return None
 
@@ -93,10 +105,13 @@ class Trial(object):
     def find_completion_date(self, root):
         try:
             raw_date = root.find('completion_date').text.split()
-            date_tuple = (int(raw_date[1]), self.months_dict[raw_date[0]])
-            return date_tuple
+            return datetime.date(int(raw_date[1]), self.months_dict[raw_date[0]], 01)
         except AttributeError:
             return None
+
+            #completion_date,
+            #                                             primary_completion_date,
+            #                                             verification_date
 
     def get_completion_date(self):
         return self.completion_date
@@ -105,8 +120,7 @@ class Trial(object):
     def find_primary_completion_date(self, root):
         try:
             raw_date = root.find('primary_completion_date').text.split()
-            date_tuple = (int(raw_date[1]), self.months_dict[raw_date[0]])
-            return date_tuple
+            return datetime.date(int(raw_date[1]), self.months_dict[raw_date[0]], 01)
         except AttributeError:
             return None
 
@@ -137,8 +151,7 @@ class Trial(object):
     def find_verification_date(self, root):
         try:
             raw_date = root.find('verification_date').text.split()
-            date_tuple = (int(raw_date[1]), self.months_dict[raw_date[0]])
-            return date_tuple
+            return datetime.date(int(raw_date[1]), self.months_dict[raw_date[0]], 01)
         except AttributeError:
             return None
 
@@ -242,13 +255,13 @@ class Trial(object):
 
     #Functions to store and retrieve: all relevant information on
         #intervention(s) in a trial
-    def find_intervention(self, root):
+    def find_intervention_details(self, root):
         """Returns a tuple of dictionaries. Each dictionary contains the
         following information on a single, unique intervention:
         intervention_name, type, study_arm, and other_name"""
 
         #Create list that will store intervention dicts (will be returned as a tuple)
-        intervention_list = list()
+        intervention_details_list = list()
 
         #Parse xml and pull all groups that start with <intervention>
         intervention_blocks = root.findall('intervention')
@@ -271,7 +284,10 @@ class Trial(object):
                 pass
 
             try:
-                intervention_dict['other_name'] = block.find('other_name').text
+                other_name_list = list()
+                for i in block.findall('other_name'):
+                    other_name_list.append(i.text)
+                intervention_dict['other_name'] = tuple(other_name_list)
             except AttributeError:
                 pass
 
@@ -283,16 +299,13 @@ class Trial(object):
             except AttributeError:
                 pass
 
-            intervention_list.append(intervention_dict)
+            intervention_details_list.append(intervention_dict)
 
-        return tuple(intervention_list)
+        return tuple(intervention_details_list)
 
-    def get_intervention(self):
-        return self.intervention
+    def get_intervention_details(self):
+        return self.intervention_details
 
-    #Function to retrieve a trial's filename (assigned below):
-    def get_file_name(self):
-        return self.file_name
 
     #Function to instantiate a trial, assigning it all relevant info from XML
     def __init__(self, xml_file):
@@ -337,4 +350,4 @@ class Trial(object):
 
         self.secondary_endpoint = self.find_secondary_endpoint(self.root)
 
-        self.intervention = self.find_intervention(self.root)
+        self.intervention_details = self.find_intervention_details(self.root)
