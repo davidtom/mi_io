@@ -66,7 +66,7 @@ def insert_2column_table(table_name, column_name, attribute):
 
 
 def insert_3column_table(table_name, column_name1, attribute1, column_name2, attribute2):
-    """Docstring TBD"""
+    """Docstring TBD - ATTRIBUTE SEARCHED FOR TO FIND THE CORRESPONDING ID SHOULD BE COLUMN_NAME1/ATTRIBUTE1"""
 
     cur.execute("""
     INSERT OR IGNORE INTO {} ({}, {})
@@ -77,7 +77,7 @@ def insert_3column_table(table_name, column_name1, attribute1, column_name2, att
 
 def insert_4column_table(table_name, column_name1, attribute1,
     column_name2, attribute2, column_name3, attribute3):
-    """Docstring TBD"""
+    """Docstring TBD - ATTRIBUTE SEARCHED FOR TO FIND THE CORRESPONDING ID SHOULD BE COLUMN_NAME1/ATTRIBUTE1"""
 
     cur.execute("""
     INSERT OR IGNORE INTO {} ({}, {}, {})
@@ -174,6 +174,16 @@ for xml in get_nct_list(folderpath):
         insert_link_table('Conditions_Link', 'condition_id', condition_id, 'nct_id', nct)
 
 
+    #Iterate through trials' primary_endpoint tuple and insert each into Endpoints table
+    #also store each corresponding id and enter it Endpoint_Link table, along with nct_id
+    for item in primary_endpoint:
+        print '*', item
+        endpoint_id = insert_3column_table('Endpoints',
+                                            'endpoint', item,
+                                            'endpoint_type', 1)
+        insert_link_table('Endpoint_Link',
+                            'endpoint_id', endpoint_id, 'nct_id', nct)
+
     #Iterate through dicts contained within intervention_details (1 dict per intervention)
     for item in intervention_details:
 
@@ -195,6 +205,11 @@ for xml in get_nct_list(folderpath):
             insert_3column_table('Intervention_Other_Names',
             'other_name', name,
             'intervention_id', intervention_id)
+
+
+    #######Intervention dict info to enter: study_arm
+    ##Then Create function to complete MoA
+
 
     #Insert data into Trials table
     cur.execute("""INSERT OR IGNORE INTO Trials (nct_id,
@@ -220,24 +235,5 @@ for xml in get_nct_list(folderpath):
                                                     last_changed_date,
                                                     sponsor_id))
 
-    #Iterate through trials' primary_endpoint tuple and insert each into Endpoints table
-    #also store each corresponding id and enter it Endpoint_Link table, along with nct_id
-    print 'Trial: {}'.format(nct)
-
-    for item in primary_endpoint:
-        print '*', item
-        endpoint_id = insert_3column_table('Endpoints',
-                                            'endpoint_type', 1,
-                                            'endpoint', item)
-        insert_link_table('Endpoint_Link',
-                            'endpoint_id', endpoint_id, 'nct_id', nct)
-
-    print '--- \n'
-
-    #Tuple of dicts, each dict represents the info for one intervention in the trial (strings AND tuples are values)
-
-
-    #Intervention dict info to enter: intervention_name, type, study_arm, and other_name
-    ####
 
     conn.commit()
