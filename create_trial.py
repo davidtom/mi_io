@@ -40,7 +40,7 @@ class Trial(object):
             nct_id = root.find('id_info/nct_id').text
 
             nct_number = int(re.findall('[0-9]+', nct_id)[0])
-            return '%08d'%nct_number
+            return int('%08d'%nct_number)
 
         # except AttributeError:
         #     return None
