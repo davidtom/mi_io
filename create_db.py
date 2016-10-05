@@ -113,11 +113,11 @@ def create_database():
     CONSTRAINT trial_arm UNIQUE (nct_id, arm_label)
     );
 
-    CREATE TABLE IF NOT EXISTS Study_Arms_Link (
+    /*CREATE TABLE IF NOT EXISTS Study_Arms_Link (
     study_arm_id INTEGER,
     nct_id INTEGER,
     PRIMARY KEY (study_arm_id, nct_id)
-    );
+    );*/
 
     CREATE TABLE IF NOT EXISTS Endpoints (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
