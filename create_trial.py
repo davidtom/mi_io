@@ -36,14 +36,14 @@ class Trial(object):
 
     #Functions to store and retrieve: NCT Number
     def find_nct(self, root):
-        # try:
+        try:
             nct_id = root.find('id_info/nct_id').text
 
-            nct_number = int(re.findall('[0-9]+', nct_id)[0])
-            return int('%08d'%nct_number)
+            nct_number = re.findall('[0-9]+', nct_id)[0]
+            return nct_number
 
-        # except AttributeError:
-        #     return None
+        except AttributeError:
+            return None
 
     def get_nct(self):
         return self.nct_number
