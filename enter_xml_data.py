@@ -12,7 +12,7 @@ import condition_buckets as cb
 
 #Enter files accessed in module
 dbname = 'main_db.sqlite3'
-foldername = 'test_xml_folder'
+foldername = 'XML_folder'
 folderpath = os.getcwd() + '/' + foldername +'/'
 
 
@@ -115,6 +115,8 @@ for xml in get_nct_list(folderpath):
 
     status = active_trial.get_status()
 
+    enrollment = active_trial.get_enrollment()
+
     lead_sponsor_type = active_trial.get_lead_sponsor_type()
 
     start_date = active_trial.get_start_date()
@@ -202,14 +204,9 @@ for xml in get_nct_list(folderpath):
         insert_link_table('Endpoint_Link',
                             'endpoint_id', endpoint_id, 'nct_id', nct)
 
-    # print 'nct: {} \n'.format(nct)
-    # print 'study arms: {} \n'.format(study_arm)
-    # print 'study arms count: {} \n'.format(len(study_arm))
 
     #Iterate through dicts contained within intervention_details (1 dict per intervention)
     for item in intervention_details:
-
-        # print '\n item: {}'.format(item)
 
         #Insert intervention's type into Intervention_Type table and store intervention_type_id
         intervention_type_id = insert_2column_table('Intervention_Type',
@@ -234,7 +231,6 @@ for xml in get_nct_list(folderpath):
         # them into Intervention_Other_Names table, along with the corresponding
         # intervention_id
         for arm in item['arm_group']:
-            # print 'arm: {}'.format(arm)
             study_arm_id = insert_constrained3column_table('Study_Arms',
                                             'nct_id', nct,
                                             'arm_label', arm)
@@ -242,17 +238,12 @@ for xml in get_nct_list(folderpath):
                                             'intervention_id', intervention_id,
                                             'study_arm_id', study_arm_id)
 
-    # print '-'*80
-
-
-    #######Intervention dict info to enter: study_arm
-    ##Then Create function to complete MoA
-
 
     #Insert data into Trials table
     cur.execute("""INSERT OR IGNORE INTO Trials (nct,
                                                 phase_id,
                                                 status,
+                                                enrollment,
                                                 study_type_id,
                                                 study_design_id,
                                                 start_date,
@@ -261,9 +252,10 @@ for xml in get_nct_list(folderpath):
                                                 verification_date,
                                                 last_changed_date,
                                                 sponsor_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (nct,
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (nct,
                                                     phase_id,
                                                     status,
+                                                    enrollment,
                                                     study_type_id,
                                                     study_design_id,
                                                     start_date,

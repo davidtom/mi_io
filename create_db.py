@@ -18,6 +18,7 @@ def create_database():
         nct INTEGER NOT NULL PRIMARY KEY UNIQUE,
         phase_id INTEGER,
         status TEXT,
+        enrollment INTEGER,
         study_type_id INTEGER,
         study_design_id INTEGER,
         start_date TEXT,

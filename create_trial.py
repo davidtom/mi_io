@@ -88,6 +88,16 @@ class Trial(object):
     def get_status(self):
         return self.status
 
+    #Functions to store and retrieve: trial status
+    def find_enrollment(self, root):
+        try:
+            return int(root.find('enrollment').text)
+        except AttributeError:
+            return None
+
+    def get_enrollment(self):
+        return self.enrollment
+
     #Functions to store and retrieve: trial start date
     def find_start_date(self, root):
         """Initially as YYYY-MM format, but assumes DD is 01 to allow
@@ -323,6 +333,8 @@ class Trial(object):
         self.lead_sponsor_type = self.find_lead_sponsor_type(self.root)
 
         self.status = self.find_status(self.root)
+
+        self.enrollment = self.find_enrollment(self.root)
 
         self.start_date = self.find_start_date(self.root)
 
