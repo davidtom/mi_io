@@ -48,6 +48,30 @@ class Trial(object):
     def get_nct(self):
         return self.nct_number
 
+    #Functions to store and retrieve: Trial's brief title
+    def find_brief_title(self, root):
+        try:
+            brief_title = root.find('brief_title').text
+            return brief_title
+
+        except AttributeError:
+            return None
+
+    def get_brief_title(self):
+        return self.brief_title
+
+    #Functions to store and retrieve: Trial's official title
+    def find_official_title(self, root):
+        try:
+            official_title = root.find('official_title').text
+            return official_title
+
+        except AttributeError:
+            return None
+
+    def get_official_title(self):
+        return self.official_title
+
     #Functions to store and retrieve: trial's phase
     def find_phase(self, root):
         try:
@@ -88,7 +112,7 @@ class Trial(object):
     def get_status(self):
         return self.status
 
-    #Functions to store and retrieve: trial status
+    #Functions to store and retrieve: trial enrollment
     def find_enrollment(self, root):
         try:
             return int(root.find('enrollment').text)
@@ -325,6 +349,10 @@ class Trial(object):
         self.root = self.parse_xml(xml_file)
 
         self.nct_number = self.find_nct(self.root)
+
+        self.brief_title = self.find_brief_title(self.root)
+
+        self.official_title = self.find_official_title(self.root)
 
         self.phase = self.find_phase(self.root)
 

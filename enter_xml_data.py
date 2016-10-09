@@ -131,6 +131,10 @@ for xml in get_nct_list(folderpath):
 
     nct = active_trial.get_nct()
 
+    brief_title = active_trial.get_brief_title()
+
+    official_title = active_trial.get_official_title()
+
     phase = active_trial.get_phase()
 
     study_type = active_trial.get_study_type()
@@ -241,6 +245,8 @@ for xml in get_nct_list(folderpath):
 
     #Insert data into Trials table
     cur.execute("""INSERT OR IGNORE INTO Trials (nct,
+                                                brief_title,
+                                                official_title,
                                                 phase_id,
                                                 status,
                                                 enrollment,
@@ -252,7 +258,9 @@ for xml in get_nct_list(folderpath):
                                                 verification_date,
                                                 last_changed_date,
                                                 sponsor_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (nct,
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (nct,
+                                                    brief_title,
+                                                    official_title,
                                                     phase_id,
                                                     status,
                                                     enrollment,
