@@ -25,7 +25,7 @@ cur = conn.cursor()
 #     nct = specific_nct
 
 ###PLACEHOLDER: nct(s) to export - update to make it more useable later
-nct_list = [1592370]
+nct_list = [1592370, 441337]
 nct = 441337
 
 #Define function to format the printing of an item with a list (ie study_design)
@@ -39,6 +39,17 @@ def print_comma_list(comma_string):
 def int_to_str8(number):
     str_number = str(number)
     return str_number.zfill(8)
+
+#Define function to merge multiple dictionaries
+def merge_dicts(*dict_args):
+    '''
+    Given any number of dicts, shallow copy and merge into a new dict,
+    precedence goes to key value pairs in latter dicts.
+    '''
+    result = {}
+    for dictionary in dict_args:
+        result.update(dictionary)
+    return result
 
 #Define function that runs a sql query to find all information contained in
 #Trials table for a specific trial based on its nct
@@ -253,9 +264,6 @@ def get_StudyArms_data(nct):
     #Store results of query in a variable as a list of tuples
     query_results = cur.fetchall()
 
-    print 'QUERY RESULTS: {}'.format(query_results)
-    print '-' * 30, '\n'
-
     #Create a list to store data for each study arm (each arm will be its own dict)
     study_arms_list = list()
 
@@ -274,7 +282,7 @@ def get_StudyArms_data(nct):
         study_arm_dict['label'] = row[1]
 
         #Add 'interventions' key and value to study_arm_dict
-        ####study_arm_dict['interventions'] = get_Interventions_data(study_arms_id)
+        study_arm_dict['interventions'] = get_Interventions_data(study_arms_id)
 
         #Append study_arm_dict to study_arms_list
         study_arms_list.append(study_arm_dict)
@@ -291,13 +299,14 @@ def get_StudyArms_data(nct):
 ### should then be added to each individual study_arm_dict, with the key being set
 #### equal to the output of the new function (will be a list of dicts). see shell code written on line 277
 
-#TBD??????????
+#Define function that runs a sql query to find all information contained in
+#Interventions table for a specific study arm of a trial basd on its Study_Arms.id
+#Returns a list of dicts, each dict being the data for one intervention of a study arm
 def get_Interventions_data(study_arms_id):
     """TBD"""
 
 #Create sql query here, to be used below
-    sql_script = """SELECT Study_Arms.arm_label,
-                            Interventions.id,
+    sql_script = """SELECT Interventions.id,
                             Interventions.intervention,
                             Intervention_Type.intervention_type
 
@@ -312,63 +321,98 @@ def get_Interventions_data(study_arms_id):
                     WHERE Study_Arms.id = ?"""
 
     #Execute sql query script
-    cur.execute(sql_script, (nct,))
+    cur.execute(sql_script, (study_arms_id,))
 
     #Store results of query in a variable as a list of tuples
     query_results = cur.fetchall()
 
-    print 'QUERY RESULTS: {}'.format(query_results)
+    #Create a list to store data for each intervention (each intervention will be its own dict)
+    interventions_list = list()
 
-    #Create dict to store data for all trial study_arms
-    study_arms_dict = dict()
-
-    #iterate through results and construct a dict for each study arm
-    #dict contains: arm_label and interventions (another list of dicts)
+    #iterate through results and construct a dict for each intervention
+    #dict contains: name, type, other names (a list), and MoA
+    #append that dict to interventions_list
     for row in query_results:
-        study_arm_id = row[0]
-        cur.execute(sql_script2, (study_arm_id,))
-        subquery_results = cur.fetchall()
-        print '\tSUBQUERY RESULT: {}'.format(subquery_results)
 
-    # #Create dict to store data
-    # nct_dict = dict()
-    #
-    # #Store list in nct_dict
-    # nct_dict['study_arms'] =
+        #Store Interventions.id as a variable that can be passed to another fx/query
+        interventions_id = row[0]
 
-    # return nct_dict
+        #Create a dict to hold information for one study arm
+        intervention_dict = dict()
+
+        #Add key and value pairs to intervention_dict
+        intervention_dict['intervention_name'] = row[1]
+        intervention_dict['intervention_type'] = row[2]
+        # intervention_dict['MoA'] = row[3] NEED TO CREATE MoA TABLE FIRST
+        intervention_dict['intervention_other_names'] = get_InterventionOtherNames_data(interventions_id)
+
+        #Append study_arm_dict to study_arms_list
+        interventions_list.append(intervention_dict)
+
+    return interventions_list
 
 
-#Define main function of module: reads a list of trials' ncts and returns
-#a JSON file of all information contained within the database for those trials
+#Define function that runs a sql query to find all information contained in
+#Intervention_Other_Names table for a specific intervention basd on its Interventions.id
+#Returns a list of other names for the intervention
+def get_InterventionOtherNames_data(interventions_id):
+    """TBD"""
+
+    #Create sql query here, to be used below
+    sql_script = """SELECT Intervention_Other_Names.other_name
+
+                    FROM Intervention_Other_Names
+                        JOIN Interventions
+                    ON
+                        Intervention_Other_Names.intervention_id = Interventions.id
+                    WHERE Interventions.id = ?"""
+
+    #Execute sql query script
+    cur.execute(sql_script, (interventions_id,))
+
+    #Store results of query in a variable as a list of tuples
+    query_results = cur.fetchall()
+
+    #list comprehension to iterate through results and add conditions to list
+    other_names = [i[0] for i in query_results]
+
+    return other_names
+
+
+#Define function that creates a single dictionary for all trial data stored
+#in database
+def create_trial_dict(nct):
+    """TBD"""
+
+    Trials_dict = get_Trials_data(nct)
+
+    Endpoints_dict = get_Endpoints_data(nct)
+
+    Country_dict = get_Country_data(nct)
+
+    Conditions_dict = get_Conditions_data(nct)
+
+    StudyArms_dict = get_StudyArms_data(nct)
+
+    #Merge and return the individual dicts
+    return merge_dicts(Trials_dict, Endpoints_dict, Country_dict, Conditions_dict, StudyArms_dict)
+
+#Define a function that takes a list of trial ncts and returns a JSON file of
+#all information contained within the database for that/those trials
+###PARAMETER MUST BE A LIST!
 def generate_json(nct_list):
     """TBD"""
 
     #Create list that will store all trial dicts, which will be converted to JSON
     trials_list = list()
 
-    #Iterate through trials in nct_list and create dictionaries that contain
-    #all data for each trial
+    #Iterate through trials in nct_list and create a dictionary that contains
+    #all data for each trial. append that dict to trials_list
     for nct in nct_list:
 
-        Trials_dict = get_Trials_data(nct)
+        trials_list.append(create_trial_dict(nct))
 
-        Endpoints_dict = get_Endpoints_data(nct)
-
-        Country_dict = get_Country_data(nct)
-
-        Conditions_dict = get_Conditions_data(nct)
-
-        StudyArms_dict = get_StudyArms_data(nct)
-
-        #Merge dictionaries into one dictionary
-        #### TO BE COMPLETED
-
-    #CHANGE THIS ONCE I HAVE COMPLETED THE FUNCTION: RETURN ONE DICT
-    return (Trials_dict, Endpoints_dict, Country_dict, Conditions_dict, StudyArms_dict)
-
-
-
+    return json.dumps(trials_list)
 
 #####################################
 ###########    TESTING    ###########
@@ -383,11 +427,17 @@ def run_test(command):
     else:
         return None
 
-test_dicts = generate_json(nct_list)
+test_json = generate_json(nct_list)
 
-for i in test_dicts:
-    print i
-    print '-'*30, '\n'
+parsed_json = json.loads(test_json)
+
+print parsed_json[0]['nct']
+print parsed_json[1]['study_arms'][1]['label']
+
+
+# for i in test_dicts:
+#     print i
+#     print '-'*30, '\n'
 
 run_test(0)
 
@@ -409,90 +459,6 @@ run_test(0)
 ###########################################################################
 ###########################################################################
 ###########################################################################
-
-
-
-
-
-
-
-####Legacy code below, for reference and in case its useful later
-
-
-#Define function that returns a tuple of all data stored in the Trial table of a trial
-    #Used nct_param to make this function iterable and to reduce naming confusion
-def get_Trials_info(nct_param):
-    """TBD"""
-
-    sql_script = """SELECT Trials.nct,
-                            Trials.brief_title,
-                            Trials.officiaL_title,
-                            Trials.status,
-                            Trials.enrollment,
-                            Trials.start_date,
-                            Trials.completion_date,
-                            Trials.primary_completion_date,
-                            Trials.verification_date,
-                            Trials.last_changed_date,
-                            Trials.index_date,
-                            Study_Type.study_type,
-                            Study_Design.study_design,
-                            Sponsor.sponsor_name,
-                            Sponsor_Type.sponsor_type,
-                            Phases.phase
-                    FROM Trials
-                        JOIN Study_Type
-                        JOIN Study_Design
-                        JOIN Sponsor
-                        JOIN Sponsor_Type
-                        JOIN Phases
-                    ON
-                        Trials.study_type_id = Study_Type.id AND
-                        Trials.study_design_id = Study_Design.id AND
-                        Trials.sponsor_id = Sponsor.id AND
-                        Sponsor.sponsor_type_id = Sponsor_Type.id AND
-                        Trials.phase_id = Phases.id
-                    WHERE Trials.nct = ?"""
-
-    cur.execute(sql_script, (nct_param,))
-
-    return cur.fetchall()
-
-
-#Define function that returns a dictionary, which contains two keys:
-    #primary_endpoints and secondar_endpoints. Values are tuples of the
-        #respective endpoints
-    #Used nct_param to make this function iterable and to reduce naming confusion
-def get_Endpoints_info(nct_param):
-    """TBD"""
-
-    sql_script = """SELECT Endpoints.endpoint_type,
-                            Endpoints.endpoint
-                    FROM Trials
-                        JOIN Endpoint_Link
-                        JOIN Endpoints
-                    ON
-                        Trials.nct = Endpoint_Link.nct_id AND
-                        Endpoint_Link.endpoint_id = Endpoints.id
-                    WHERE Trials.nct = ?"""
-
-    cur.execute(sql_script, (nct_param,))
-
-    endpoints_dict = dict()
-    primary_endpoints = list()
-    secondary_endpoints = list()
-
-    for row in cur.fetchall():
-        if row[0] == 1:
-            primary_endpoints.append(row[1])
-
-        if row[0] == 2:
-            secondary_endpoints.append(row[1])
-
-    endpoints_dict['primary_endpoints'] = primary_endpoints
-    endpoints_dict['secondary_endpoints'] = secondary_endpoints
-
-    return endpoints_dict
 
 
 def print_Trials_info(Trials_info):
@@ -535,13 +501,3 @@ def print_Endpoints_info(Endpoints_info):
         print '\t*: {}'.format(row)
 
     return None
-
-
-# Trials_info = get_Trials_info2(nct)
-# Endpoints_info = get_Endpoints_info(nct)
-#
-# print_Trials_info(Trials_info)
-# print_Endpoints_info(Endpoints_info)
-
-# print '\n\n\n\n\n'
-# print Endpoints_info['primary_endpoints']
