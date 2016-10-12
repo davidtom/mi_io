@@ -25,7 +25,7 @@ cur = conn.cursor()
 #     nct = specific_nct
 
 ###PLACEHOLDER: nct(s) to export - update to make it more useable later
-nct_list = [441337]
+nct_list = [1592370]
 nct = 441337
 
 #Define function to format the printing of an item with a list (ie study_design)
@@ -80,7 +80,7 @@ def get_Trials_data(nct):
     #Execute sql query script
     cur.execute(sql_script, (nct,))
 
-    #Store results of query in a variable
+    #Store results of query in a variable as a list of tuples
     query_results = cur.fetchall()
 
     #Check to make sure that only one row was returned in query, and raise a
@@ -136,7 +136,7 @@ def get_Endpoints_data(nct):
     #Execute sql query script
     cur.execute(sql_script, (nct,))
 
-    #Store results of query in a variable
+    #Store results of query in a variable as a list of tuples
     query_results = cur.fetchall()
 
     #Create lists to store primary and secondary endpoints found in db
@@ -182,7 +182,7 @@ def get_Country_data(nct):
     #Execute sql query script
     cur.execute(sql_script, (nct,))
 
-    #Store results of query in a variable
+    #Store results of query in a variable as a list of tuples
     query_results = cur.fetchall()
 
     #list comprehension to iterate through results and add countries to list
@@ -191,10 +191,152 @@ def get_Country_data(nct):
     #Create dict to store data
     nct_dict = dict()
 
-    #Store both lists in nct_dict
+    #Store list in nct_dict
     nct_dict['country'] = countries
 
     return nct_dict
+
+#Define function that runs a sql query to find all information contained in
+#Conditions table for a specific trial based on its nct
+#Returns a dict with one k/v pair:
+    #countries: list of conditions
+def get_Conditions_data(nct):
+    """TBD"""
+
+    #Create sql query here, to be used below
+    sql_script = """SELECT Conditions.condition
+
+                    FROM Trials
+                        JOIN Conditions_Link
+                        JOIN Conditions
+                    ON
+                        Trials.nct = Conditions_Link.nct_id AND
+                        Conditions_Link.condition_id = Conditions.id
+                    WHERE Trials.nct = ?"""
+
+    #Execute sql query script
+    cur.execute(sql_script, (nct,))
+
+    #Store results of query in a variable as a list of tuples
+    query_results = cur.fetchall()
+
+    #list comprehension to iterate through results and add conditions to list
+    conditions = [i[0] for i in query_results]
+
+    #Create dict to store data
+    nct_dict = dict()
+
+    #Store list in nct_dict
+    nct_dict['condition'] = conditions
+
+    return nct_dict
+
+
+#Define function that runs a sql query to find all information contained in
+#Study_Arms table for a specific trial basd on its nct
+#Returns a list of dicts, each dict being the data for one study arm
+def get_StudyArms_data(nct):
+    """TBD"""
+
+    #Create sql query here, to be used below
+    sql_script = """SELECT Study_Arms.id, Study_Arms.arm_label
+
+                    FROM Study_Arms
+                        JOIN Trials
+                    ON
+                        Study_Arms.nct_id = Trials.nct
+                    WHERE Trials.nct = ?"""
+
+    #Execute sql query script
+    cur.execute(sql_script, (nct,))
+
+    #Store results of query in a variable as a list of tuples
+    query_results = cur.fetchall()
+
+    print 'QUERY RESULTS: {}'.format(query_results)
+    print '-' * 30, '\n'
+
+    #Create a list to store data for each study arm (each arm will be its own dict)
+    study_arms_list = list()
+
+    #iterate through results and construct a dict for each study arm
+    #dict contains: arm_label and interventions (another list of dicts)
+    #append that dict to study_arms_list
+    for row in query_results:
+
+        #Store Study_Arms.id as a variable that can be passed to another fx/query
+        study_arms_id = row[0]
+
+        #Create a dict to hold information for one study arm
+        study_arm_dict = dict()
+
+        #Add 'label' key and value to study_arm_dict
+        study_arm_dict['label'] = row[1]
+
+        #Add 'interventions' key and value to study_arm_dict
+        ####study_arm_dict['interventions'] = get_Interventions_data(study_arms_id)
+
+        #Append study_arm_dict to study_arms_list
+        study_arms_list.append(study_arm_dict)
+
+    #Create dict to store data for all trial study_arms
+    study_arms_dict = dict()
+
+    #Store study_arms_list in study_arms_dict
+    study_arms_dict['study_arms'] = study_arms_list
+
+    return study_arms_dict
+
+##Function that I will create below should do the same steps as above, except for interventions. This data
+### should then be added to each individual study_arm_dict, with the key being set
+#### equal to the output of the new function (will be a list of dicts). see shell code written on line 277
+
+#TBD??????????
+def get_Interventions_data(study_arms_id):
+    """TBD"""
+
+#Create sql query here, to be used below
+    sql_script = """SELECT Study_Arms.arm_label,
+                            Interventions.id,
+                            Interventions.intervention,
+                            Intervention_Type.intervention_type
+
+                    FROM Study_Arms
+                        JOIN Interventions_Link
+                        JOIN Interventions
+                        JOIN Intervention_Type
+                    ON
+                        Study_Arms.id = Interventions_Link.study_arm_id AND
+                        Interventions_Link.intervention_id = Interventions.id AND
+                        Interventions.intervention_type_id = Intervention_Type.id
+                    WHERE Study_Arms.id = ?"""
+
+    #Execute sql query script
+    cur.execute(sql_script, (nct,))
+
+    #Store results of query in a variable as a list of tuples
+    query_results = cur.fetchall()
+
+    print 'QUERY RESULTS: {}'.format(query_results)
+
+    #Create dict to store data for all trial study_arms
+    study_arms_dict = dict()
+
+    #iterate through results and construct a dict for each study arm
+    #dict contains: arm_label and interventions (another list of dicts)
+    for row in query_results:
+        study_arm_id = row[0]
+        cur.execute(sql_script2, (study_arm_id,))
+        subquery_results = cur.fetchall()
+        print '\tSUBQUERY RESULT: {}'.format(subquery_results)
+
+    # #Create dict to store data
+    # nct_dict = dict()
+    #
+    # #Store list in nct_dict
+    # nct_dict['study_arms'] =
+
+    # return nct_dict
 
 
 #Define main function of module: reads a list of trials' ncts and returns
@@ -215,11 +357,15 @@ def generate_json(nct_list):
 
         Country_dict = get_Country_data(nct)
 
+        Conditions_dict = get_Conditions_data(nct)
+
+        StudyArms_dict = get_StudyArms_data(nct)
+
         #Merge dictionaries into one dictionary
         #### TO BE COMPLETED
 
     #CHANGE THIS ONCE I HAVE COMPLETED THE FUNCTION: RETURN ONE DICT
-    return (Trials_dict, Endpoints_dict, Country_dict)
+    return (Trials_dict, Endpoints_dict, Country_dict, Conditions_dict, StudyArms_dict)
 
 
 
@@ -228,13 +374,22 @@ def generate_json(nct_list):
 ###########    TESTING    ###########
 #####################################
 
+def run_test(command):
+    if command == 1:
+        for test_dict in test_dicts:
+            for k, v in test_dict.iteritems():
+                print '{}: {}'.format(k,v)
+            print '---\n'
+    else:
+        return None
+
 test_dicts = generate_json(nct_list)
 
-for test_dict in test_dicts:
-    for k, v in test_dict.iteritems():
-        print '{}: {}'.format(k,v)
-    print '---\n'
+for i in test_dicts:
+    print i
+    print '-'*30, '\n'
 
+run_test(0)
 
 ###########################################################################
 ###########################################################################
