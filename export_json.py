@@ -2,43 +2,27 @@
 Module Purpose: Generates a json file containing all information stored in
 the database for one or more trials.
 
-input:
-output:
+input: a list of nct numbers (to generate_json() function)
+output: a single json object containing all information for the specified trials
 """
 
 import sqlite3
 import json
+import datetime
 
-#Enter files accessed in module
+#Enter db to select data from
 dbname = 'main_db.sqlite3'
 
 #Connect to db
 conn = sqlite3.connect(dbname)
 cur = conn.cursor()
 
-# #Specify nct of trial to display (not sure how useful this will be in future,
-# #but good for QC role now)
-# specific_nct = raw_input('Enter nct to export: ')
-# if len(specific_nct) < 1:
-#     nct = 441337
-# else:
-#     nct = specific_nct
-
-###PLACEHOLDER: nct(s) to export - update to make it more useable later
-nct_list = [1592370, 441337]
-nct = 441337
-
-#Define function to format the printing of an item with a list (ie study_design)
-def print_comma_list(comma_string):
-    print '\tStudy Design:'
-    for i in comma_string.split(','):
-        print '\t\t', i.lstrip()
-    return None
 
 #Define function that returns an 8 digit string from an int (for NCT id)
 def int_to_str8(number):
     str_number = str(number)
     return str_number.zfill(8)
+
 
 #Define function to merge multiple dictionaries
 def merge_dicts(*dict_args):
@@ -50,6 +34,7 @@ def merge_dicts(*dict_args):
     for dictionary in dict_args:
         result.update(dictionary)
     return result
+
 
 #Define function that runs a sql query to find all information contained in
 #Trials table for a specific trial based on its nct
@@ -99,28 +84,30 @@ def get_Trials_data(nct):
     if len(query_results) > 1:
         raise ValueError('More than one row was returned in get_Trials_info query')
 
+    #
+
     #Create dict to store data
     nct_dict = dict()
 
-    #Iterate through query_results and store items in nct_dict
-    for i in query_results:
+    #Store items in query_results in nct_dict (query_results is a list of tuple(s))
+    result_tuple = query_results[0]
 
-        nct_dict['nct'] = int_to_str8(i[0])
-        nct_dict['brief_title'] = i[1]
-        nct_dict['official_title'] = i[2]
-        nct_dict['status'] = i[3]
-        nct_dict['enrollment'] = i[4]
-        nct_dict['start_date'] = i[5]
-        nct_dict['completion_date'] = i[6]
-        nct_dict['primary_completion_date'] = i[7]
-        nct_dict['verification_date'] = i[8]
-        nct_dict['last_changed_date'] = i[9]
-        nct_dict['index_date'] = i[10]
-        nct_dict['study_type'] = i[11]
-        nct_dict['study_design'] = i[12]
-        nct_dict['sponsor'] = i[13]
-        nct_dict['sponsor_type'] = i[14]
-        nct_dict['phase'] = i[15]
+    nct_dict['nct'] = int_to_str8(result_tuple[0])
+    nct_dict['brief_title'] = result_tuple[1]
+    nct_dict['official_title'] = result_tuple[2]
+    nct_dict['status'] = result_tuple[3]
+    nct_dict['enrollment'] = result_tuple[4]
+    nct_dict['start_date'] = result_tuple[5]
+    nct_dict['completion_date'] = result_tuple[6]
+    nct_dict['primary_completion_date'] = result_tuple[7]
+    nct_dict['verification_date'] = result_tuple[8]
+    nct_dict['last_changed_date'] = result_tuple[9]
+    nct_dict['index_date'] = result_tuple[10]
+    nct_dict['study_type'] = result_tuple[11]
+    nct_dict['study_design'] = result_tuple[12]
+    nct_dict['sponsor'] = result_tuple[13]
+    nct_dict['sponsor_type'] = result_tuple[14]
+    nct_dict['phase'] = result_tuple[15]
 
     return nct_dict
 
@@ -343,7 +330,7 @@ def get_Interventions_data(study_arms_id):
         #Add key and value pairs to intervention_dict
         intervention_dict['intervention_name'] = row[1]
         intervention_dict['intervention_type'] = row[2]
-        # intervention_dict['MoA'] = row[3] NEED TO CREATE MoA TABLE FIRST
+        intervention_dict['MoA'] = 'N/A' ####row[3] ##NEED TO CREATE MoA TABLE #NEED TO CREATE MoA TABLE #NEED TO CREATE MoA TABLE #NEED TO CREATE MoA TABLE
         intervention_dict['intervention_other_names'] = get_InterventionOtherNames_data(interventions_id)
 
         #Append study_arm_dict to study_arms_list
@@ -397,10 +384,13 @@ def create_trial_dict(nct):
     #Merge and return the individual dicts
     return merge_dicts(Trials_dict, Endpoints_dict, Country_dict, Conditions_dict, StudyArms_dict)
 
-#Define a function that takes a list of trial ncts and returns a JSON file of
-#all information contained within the database for that/those trials
-###PARAMETER MUST BE A LIST!
-def generate_json(nct_list):
+#Define a function that takes a list of trial ncts and:
+            ## Returns a .json file (setable or by default)
+            ## Returns a string of json
+# of all information contained within the database for that/those trials
+###Parameter 1: A list
+###Parameter 2: .json file (default = trialexport_YYYY-MM-DD)
+def export_json(nct_list, fname = 'trialexport_' + str(datetime.datetime.now()).split()[0]):
     """TBD"""
 
     #Create list that will store all trial dicts, which will be converted to JSON
@@ -412,92 +402,7 @@ def generate_json(nct_list):
 
         trials_list.append(create_trial_dict(nct))
 
+    with open('{}.json'.format(fname), 'w') as outfile:
+        json.dump(trials_list, outfile)
+
     return json.dumps(trials_list)
-
-#####################################
-###########    TESTING    ###########
-#####################################
-
-def run_test(command):
-    if command == 1:
-        for test_dict in test_dicts:
-            for k, v in test_dict.iteritems():
-                print '{}: {}'.format(k,v)
-            print '---\n'
-    else:
-        return None
-
-test_json = generate_json(nct_list)
-
-parsed_json = json.loads(test_json)
-
-print parsed_json[0]['nct']
-print parsed_json[1]['study_arms'][1]['label']
-
-
-# for i in test_dicts:
-#     print i
-#     print '-'*30, '\n'
-
-run_test(0)
-
-###########################################################################
-###########################################################################
-###########################################################################
-
-# Have all of these functions create one big dict (heh), which can the be encoded to json!!
-# Data within a k/v pair that has more levels should probably be saved as a dict of dicts if possible
-# Check how to best do this though BEFORE YOU START!!
-#
-# USE JSON CREATED HERE TO CREATE THE 'NEW' TRIAL CLASS TYPE - MAKES THE MOST SENSE!!!!!
-# THIS JSON CAN THEREFORE BE EXPORTED TO ANY PROGRAM, INCLUDING MY FIDELITY CHECK PROGRAM (OR A BETTER NAME...)
-# see this page for reference: http://stackoverflow.com/questions/23110383/how-to-dynamically-build-a-json-object-with-python
-#
-# Everything below should be moved to the functions above to assign k/v's.
-# Can just manipulate the dict to print in whatever format I want.
-
-###########################################################################
-###########################################################################
-###########################################################################
-
-
-def print_Trials_info(Trials_info):
-    """TBD"""
-
-    for i in Trials_info:
-        print 'Tracking Information:'
-        print '\tNCT: {}'.format(int_to_str8(i[0]))
-        print '\tLast Changed Date: {}'.format(i[9])
-        print '\tStart Date: {}'.format(i[5])
-        print '\tPrimary Completion Date: {}'.format(i[7])
-
-
-        print 'Currently Uncategorized Information:'
-        print '\tBrief Title: {}'.format(i[1])
-        print '\tOfficial Title: {}'.format(i[2])
-        print '\tStatus: {}'.format(i[3])
-        print '\tPhase: {}'.format(i[15])
-        print '\tEnrollment: {}'.format(i[4])
-        print '\tCompletion Date: {}'.format(i[6])
-        print '\tVerification Date: {}'.format(i[8])
-        print '\tIndex Date: {}'.format(i[10])
-        print '\tStudy Type: {}'.format(i[11])
-        print_comma_list(i[12])
-        print '\tSponsor: {}'.format(i[13])
-        print '\tSponsor Type: {}'.format(i[14])
-
-    return None
-
-
-def print_Endpoints_info(Endpoints_info):
-    """TBD"""
-
-    print "Primary Endpoints:"
-    for row in Endpoints_info['primary_endpoints']:
-        print '\t*: {}'.format(row)
-
-    print "Secondary Endpoints:"
-    for row in Endpoints_info['secondary_endpoints']:
-        print '\t*: {}'.format(row)
-
-    return None
