@@ -7,7 +7,7 @@ import os
 import re
 import csv
 import create_trial as CT
-import condition_buckets as cb
+import csv_data
 
 
 #Enter files accessed in module
@@ -185,7 +185,7 @@ for xml in get_nct_list(folderpath):
     #Iterate through tuple of conditions in trial and insert each into Conditions table
     #also store each corresponding id and enter it into Conditions_Link table, along with nct_id
     for item in condition:
-        condition_id = insert_2column_table('Conditions', 'condition', cb.bucket_condition(item))
+        condition_id = insert_2column_table('Conditions', 'condition', csv_data.bucket_conditions(item))
         insert_link_table('Conditions_Link', 'condition_id', condition_id, 'nct_id', nct)
 
 
