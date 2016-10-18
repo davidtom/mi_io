@@ -52,7 +52,7 @@ class Trial(object):
     def find_brief_title(self, root):
         try:
             brief_title = root.find('brief_title').text
-            return brief_title
+            return brief_title.lower()
 
         except AttributeError:
             return None
@@ -64,7 +64,7 @@ class Trial(object):
     def find_official_title(self, root):
         try:
             official_title = root.find('official_title').text
-            return official_title
+            return official_title.lower()
 
         except AttributeError:
             return None
@@ -75,7 +75,7 @@ class Trial(object):
     #Functions to store and retrieve: trial's phase
     def find_phase(self, root):
         try:
-            return root.find('phase').text
+            return root.find('phase').text.lower()
         except AttributeError:
             return None
 
@@ -85,7 +85,7 @@ class Trial(object):
     #Functions to store and retrieve: lead sponsor
     def find_lead_sponsor(self, root):
         try:
-            return root.find('sponsors/lead_sponsor/agency').text
+            return root.find('sponsors/lead_sponsor/agency').text.lower()
         except AttributeError:
             return None
 
@@ -95,7 +95,7 @@ class Trial(object):
     #Functions to store and retrieve: lead sponsor type
     def find_lead_sponsor_type(self, root):
         try:
-            return root.find('sponsors/lead_sponsor/agency_class').text
+            return root.find('sponsors/lead_sponsor/agency_class').text.lower()
         except AttributeError:
             return None
 
@@ -105,7 +105,7 @@ class Trial(object):
     #Functions to store and retrieve: trial status
     def find_status(self, root):
         try:
-            return root.find('overall_status').text
+            return root.find('overall_status').text.lower()
         except AttributeError:
             return None
 
@@ -164,7 +164,7 @@ class Trial(object):
     #Functions to store and retrieve: study type (interventional, observational, etc.)
     def find_study_type(self, root):
         try:
-            return root.find('study_type').text
+            return root.find('study_type').text.lower()
         except AttributeError:
             return None
 
@@ -174,7 +174,7 @@ class Trial(object):
     #Functions to store and retrieve: study design (allocation, arms, etc.)
     def find_study_design(self, root):
         try:
-            return root.find('study_design').text
+            return root.find('study_design').text.lower()
         except AttributeError:
             return None
 
@@ -222,7 +222,7 @@ class Trial(object):
     def find_condition(self, root):
         #Use list comprehension to unpack all conditions :)
         try:
-            return tuple([i.text for i in root.findall('condition')])
+            return tuple([i.text.lower() for i in root.findall('condition')])
         except AttributeError:
             return None
 
@@ -232,7 +232,7 @@ class Trial(object):
     #Functions to store and retrieve: countries trial is being conducted in
     def find_country(self, root):
         try:
-            return tuple([i.text for i in root.findall('location_countries/country')])
+            return tuple([i.text.lower() for i in root.findall('location_countries/country')])
         except AttributeError:
             return None
 
@@ -242,7 +242,7 @@ class Trial(object):
     #Functions to store and retrieve: trial's study arm(s)
     def find_study_arm(self, root):
         try:
-            return tuple([i.text for i in root.findall('arm_group/arm_group_label')])
+            return tuple([i.text.lower() for i in root.findall('arm_group/arm_group_label')])
         except AttributeError:
             return None
 
@@ -257,7 +257,7 @@ class Trial(object):
         single item"""
 
         try:
-            return set(tuple([i.text for i in root.findall('primary_outcome/measure')]))
+            return set(tuple([i.text.lower() for i in root.findall('primary_outcome/measure')]))
         except AttributeError:
             return None
 
@@ -276,7 +276,7 @@ class Trial(object):
         single item"""
 
         try:
-            return set(tuple([i.text for i in root.findall('secondary_outcome/measure')]))
+            return set(tuple([i.text.lower() for i in root.findall('secondary_outcome/measure')]))
         except AttributeError:
             return None
 
@@ -287,12 +287,54 @@ class Trial(object):
         single item"""
         return self.secondary_endpoint
 
+
     #Functions to store and retrieve: all relevant information on
         #intervention(s) in a trial
     def find_intervention_details(self, root):
         """Returns a tuple of dictionaries. Each dictionary contains the
         following information on a single, unique intervention:
         intervention_name, type, study_arm, and other_name"""
+
+        #Create function to try to clean an intervention_name
+        #in order to make it as singular as possible (nivo + ipi = (nivo, ipi))
+        ###Returns a tuple of string(s)
+        def clean_intervention(intervention_name):
+            """TBD"""
+
+        #Break apart the '+' and 'and' items for now - can only get this so clean
+        #using large patterns (for fear of compromising the data). Rest of data
+        #cleaning will have to be done at analysis phase (good opportunity to learn python pandas!)
+
+        #make all of these lower case to allow 'stacking'  - might want to do that for all text variables
+        #other names, country (?), end points?, CONDITIONS
+
+            #Create 'flag' variables to denote if 'placebo' or 'and/+' exists anywhere in intervention
+            placebo_flag = False
+
+            concatentation_flag = False
+
+            for i in intervention_name.lower().split():
+
+                #If placebo is anywhere in intervention name, flag it to be corrected
+                if i in ['placebo']:
+                    placebo_flag = True
+                #If + or 'and' is in the intervention name, flag that there is a concatenation
+                if i in ['+', 'and', 'plus']:
+                    concatentation_flag = True
+
+            #define a string variable to store concatentation pattern to look for
+            pat = "\+ | and | plus"
+
+            #If a placebo is in string, return placebo
+            if placebo_flag and not concatentation_flag:
+                return ('placebo',)
+            #If a concatentation item is in string, return a list of split items
+            elif concatentation_flag:
+                return tuple(re.split(pat, intervention_name))
+            #If neither flags are triggered (ie nivo, placebo, ipi, etc.)
+            #return intervention_name as is
+            else:
+                return (intervention_name,)
 
         #Create list that will store intervention dicts (will be returned as a tuple)
         intervention_details_list = list()
@@ -303,37 +345,46 @@ class Trial(object):
         #Parse blocks of <intervention> data and assign them to intervention_dict
         for block in intervention_blocks:
 
-            #Create dict that will store information for a unique intervention
-            intervention_dict = dict()
-
-            #Identify needed information on each intervention and add to dict
+            #Identify intervention(s) included in the intervention block using clean_intervention()
             try:
-                intervention_dict['intervention'] = block.find('intervention_name').text
+                intervention_name = clean_intervention(block.find('intervention_name').text)
             except AttributeError:
                 pass
 
-            try:
-                intervention_dict['type'] = block.find('intervention_type').text
-            except AttributeError:
-                pass
+            #Iterate across the one or more interventions, storing the relevant details
+            #For split interventions, the information will be duplicated, except for 'intervention'
+            #This will have to be dealt with later, and is the cost of cleaning the data at this step
+            for intervention in intervention_name:
 
-            try:
-                other_name_list = list()
-                for i in block.findall('other_name'):
-                    other_name_list.append(i.text)
-                intervention_dict['other_name'] = tuple(other_name_list)
-            except AttributeError:
-                pass
+                #Create dict that will store information for a unique intervention
+                intervention_dict = dict()
 
-            try:
-                arm_group_list = list()
-                for i in block.findall('arm_group_label'):
-                    arm_group_list.append(i.text)
-                intervention_dict['arm_group'] = tuple(arm_group_list)
-            except AttributeError:
-                pass
+                #Store relevant details for the intervention
+                intervention_dict['intervention'] = intervention.lower()
 
-            intervention_details_list.append(intervention_dict)
+                try:
+                    intervention_dict['type'] = block.find('intervention_type').text.lower()
+                except AttributeError:
+                    pass
+
+                try:
+                    other_name_list = list()
+                    for i in block.findall('other_name'):
+                        other_name_list.append(i.text.lower())
+                    intervention_dict['other_name'] = tuple(other_name_list)
+                except AttributeError:
+                    pass
+
+                try:
+                    arm_group_list = list()
+                    for i in block.findall('arm_group_label'):
+                        arm_group_list.append(i.text.lower())
+                    intervention_dict['arm_group'] = tuple(arm_group_list)
+                except AttributeError:
+                    pass
+
+                #append current intervention_dict to the intervention_details_list
+                intervention_details_list.append(intervention_dict)
 
         return tuple(intervention_details_list)
 
