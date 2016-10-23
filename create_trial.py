@@ -52,7 +52,7 @@ class Trial(object):
     def find_brief_title(self, root):
         try:
             brief_title = root.find('brief_title').text
-            return brief_title.lower()
+            return brief_title.lower().strip()
 
         except AttributeError:
             return None
@@ -64,7 +64,7 @@ class Trial(object):
     def find_official_title(self, root):
         try:
             official_title = root.find('official_title').text
-            return official_title.lower()
+            return official_title.lower().strip()
 
         except AttributeError:
             return None
@@ -75,7 +75,7 @@ class Trial(object):
     #Functions to store and retrieve: trial's phase
     def find_phase(self, root):
         try:
-            return root.find('phase').text.lower()
+            return root.find('phase').text.lower().strip()
         except AttributeError:
             return None
 
@@ -85,7 +85,7 @@ class Trial(object):
     #Functions to store and retrieve: lead sponsor
     def find_lead_sponsor(self, root):
         try:
-            return root.find('sponsors/lead_sponsor/agency').text.lower()
+            return root.find('sponsors/lead_sponsor/agency').text.lower().strip()
         except AttributeError:
             return None
 
@@ -95,7 +95,7 @@ class Trial(object):
     #Functions to store and retrieve: lead sponsor type
     def find_lead_sponsor_type(self, root):
         try:
-            return root.find('sponsors/lead_sponsor/agency_class').text.lower()
+            return root.find('sponsors/lead_sponsor/agency_class').text.lower().strip()
         except AttributeError:
             return None
 
@@ -105,7 +105,7 @@ class Trial(object):
     #Functions to store and retrieve: trial status
     def find_status(self, root):
         try:
-            return root.find('overall_status').text.lower()
+            return root.find('overall_status').text.lower().strip()
         except AttributeError:
             return None
 
@@ -164,7 +164,7 @@ class Trial(object):
     #Functions to store and retrieve: study type (interventional, observational, etc.)
     def find_study_type(self, root):
         try:
-            return root.find('study_type').text.lower()
+            return root.find('study_type').text.lower().strip()
         except AttributeError:
             return None
 
@@ -174,7 +174,7 @@ class Trial(object):
     #Functions to store and retrieve: study design (allocation, arms, etc.)
     def find_study_design(self, root):
         try:
-            return root.find('study_design').text.lower()
+            return root.find('study_design').text.lower().strip()
         except AttributeError:
             return None
 
@@ -222,7 +222,7 @@ class Trial(object):
     def find_condition(self, root):
         #Use list comprehension to unpack all conditions :)
         try:
-            return tuple([i.text.lower() for i in root.findall('condition')])
+            return tuple([i.text.lower().strip() for i in root.findall('condition')])
         except AttributeError:
             return None
 
@@ -232,7 +232,7 @@ class Trial(object):
     #Functions to store and retrieve: countries trial is being conducted in
     def find_country(self, root):
         try:
-            return tuple([i.text.lower() for i in root.findall('location_countries/country')])
+            return tuple([i.text.lower().strip() for i in root.findall('location_countries/country')])
         except AttributeError:
             return None
 
@@ -242,7 +242,7 @@ class Trial(object):
     #Functions to store and retrieve: trial's study arm(s)
     def find_study_arm(self, root):
         try:
-            return tuple([i.text.lower() for i in root.findall('arm_group/arm_group_label')])
+            return tuple([i.text.lower().strip() for i in root.findall('arm_group/arm_group_label')])
         except AttributeError:
             return None
 
@@ -257,7 +257,7 @@ class Trial(object):
         single item"""
 
         try:
-            return set(tuple([i.text.lower() for i in root.findall('primary_outcome/measure')]))
+            return set(tuple([i.text.lower().strip() for i in root.findall('primary_outcome/measure')]))
         except AttributeError:
             return None
 
@@ -276,7 +276,7 @@ class Trial(object):
         single item"""
 
         try:
-            return set(tuple([i.text.lower() for i in root.findall('secondary_outcome/measure')]))
+            return set(tuple([i.text.lower().strip() for i in root.findall('secondary_outcome/measure')]))
         except AttributeError:
             return None
 
@@ -360,17 +360,17 @@ class Trial(object):
                 intervention_dict = dict()
 
                 #Store relevant details for the intervention
-                intervention_dict['intervention'] = intervention.lower()
+                intervention_dict['intervention'] = intervention.lower().strip()
 
                 try:
-                    intervention_dict['type'] = block.find('intervention_type').text.lower()
+                    intervention_dict['type'] = block.find('intervention_type').text.lower().strip()
                 except AttributeError:
                     pass
 
                 try:
                     other_name_list = list()
                     for i in block.findall('other_name'):
-                        other_name_list.append(i.text.lower())
+                        other_name_list.append(i.text.lower().strip())
                     intervention_dict['other_name'] = tuple(other_name_list)
                 except AttributeError:
                     pass
@@ -378,7 +378,7 @@ class Trial(object):
                 try:
                     arm_group_list = list()
                     for i in block.findall('arm_group_label'):
-                        arm_group_list.append(i.text.lower())
+                        arm_group_list.append(i.text.lower().strip())
                     intervention_dict['arm_group'] = tuple(arm_group_list)
                 except AttributeError:
                     pass
