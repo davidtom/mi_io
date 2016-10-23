@@ -217,6 +217,9 @@ def enter_xml_data():
             intervention_type_id = insert_2column_table('Intervention_Type',
             'intervention_type', item['type'])
 
+            # moa_id = insert_2column_table('MoA',
+            # 'moa', csv_data.assign_moa(item['intervention']))
+
             #Insert intervention's name, intervention_type_id and MoA_id
             #(placeholder for now) into Interventions table
             intervention_id = insert_4column_table('Interventions',
@@ -276,3 +279,6 @@ def enter_xml_data():
 
 
         conn.commit()
+
+if __name__ == '__main__':
+    enter_xml_data()

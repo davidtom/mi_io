@@ -13,7 +13,7 @@ def bucket_conditions(condition):
     prostate_cancer_list = list()
 
     #open conditions.csv and populate condition buckets
-    with open('conditions.csv', 'rb') as csv_file:
+    with open('condition_buckets.csv', 'rU') as csv_file:
         f = csv.reader(csv_file, delimiter=',')
 
         for row in f:
@@ -27,11 +27,11 @@ def bucket_conditions(condition):
                 RCC_list.append(row[0])
 
             #Fill out RCC_list
-            if row[1] == 'Melanoma':
+            if row[1] == 'melanoma':
                 melanoma_list.append(row[0])
 
             #Fill out prostate_cancer_list
-            if row[1] == 'Prostate Cancer':
+            if row[1] == 'prostate Cancer':
                 prostate_cancer_list.append(row[0])
 
 
@@ -56,4 +56,30 @@ def bucket_conditions(condition):
         return condition
 
 
-##
+##Create function to read data from moa_list.csv and use it to assign
+##interventions the appropriate MoAs. If data does not exist for one, it
+##will add that information into moa_list.csv
+def sync_moa_list():
+    """TBD: higher level function - is not the one checking if a
+    specific intervention is in  most_list.csv"""
+
+
+
+
+def get_moa(intervention, data = 'moa_list.csv'):
+    """TBD"""
+
+    with open(data, 'rU+') as csv_file:
+
+        f = csv.reader(csv_file, delimiter=',')
+
+        for row in f:
+            if intervention.lower().strip() == row[0].lower().strip():
+                return row[1].lower().strip()
+            else:
+                pass
+
+    return None
+
+
+###
