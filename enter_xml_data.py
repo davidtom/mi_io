@@ -105,160 +105,147 @@ def insert_link_table(table_name, column_name1, attribute1, column_name2, attrib
 
 
 #Iterate through all nct*.xml files in the folderpath
-for xml in get_nct_list(folderpath):
+def enter_xml_data():
+    for xml in get_nct_list(folderpath):
 
-    #Create an object of class Trial from current xml file
-    active_trial = CT.Trial(folderpath + xml)
+        #Create an object of class Trial from current xml file
+        active_trial = CT.Trial(folderpath + xml)
 
-    #Create local variables for all attributes of the trial
-    primary_completion_date = active_trial.get_primary_completion_date()
+        #Create local variables for all attributes of the trial
+        primary_completion_date = active_trial.get_primary_completion_date()
 
-    status = active_trial.get_status()
+        status = active_trial.get_status()
 
-    enrollment = active_trial.get_enrollment()
+        enrollment = active_trial.get_enrollment()
 
-    lead_sponsor_type = active_trial.get_lead_sponsor_type()
+        lead_sponsor_type = active_trial.get_lead_sponsor_type()
 
-    start_date = active_trial.get_start_date()
+        start_date = active_trial.get_start_date()
 
-    intervention_details = active_trial.get_intervention_details()
+        intervention_details = active_trial.get_intervention_details()
 
-    file_name = active_trial.get_file_name()
+        file_name = active_trial.get_file_name()
 
-    completion_date = active_trial.get_completion_date()
+        completion_date = active_trial.get_completion_date()
 
-    primary_endpoint = active_trial.get_primary_endpoint()
+        primary_endpoint = active_trial.get_primary_endpoint()
 
-    nct = active_trial.get_nct()
+        nct = active_trial.get_nct()
 
-    brief_title = active_trial.get_brief_title()
+        brief_title = active_trial.get_brief_title()
 
-    official_title = active_trial.get_official_title()
+        official_title = active_trial.get_official_title()
 
-    phase = active_trial.get_phase()
+        phase = active_trial.get_phase()
 
-    study_type = active_trial.get_study_type()
+        study_type = active_trial.get_study_type()
 
-    condition = active_trial.get_condition()
+        condition = active_trial.get_condition()
 
-    lead_sponsor = active_trial.get_lead_sponsor()
+        lead_sponsor = active_trial.get_lead_sponsor()
 
-    first_received_date = active_trial.get_first_received_date()
+        first_received_date = active_trial.get_first_received_date()
 
-    verification_date = active_trial.get_verification_date()
+        verification_date = active_trial.get_verification_date()
 
-    last_changed_date = active_trial.get_last_changed_date()
+        last_changed_date = active_trial.get_last_changed_date()
 
-    study_design = active_trial.get_study_design()
+        study_design = active_trial.get_study_design()
 
-    secondary_endpoint = active_trial.get_secondary_endpoint()
+        secondary_endpoint = active_trial.get_secondary_endpoint()
 
-    study_arm = active_trial.get_study_arm()
+        study_arm = active_trial.get_study_arm()
 
-    country = active_trial.get_country()
+        country = active_trial.get_country()
 
-    #Insert trial's lead_sponsor_type into Sponsor_Type table and store corresponding id
-    sponsor_type_id = insert_2column_table('Sponsor_Type', 'sponsor_type', lead_sponsor_type)
+        #Insert trial's lead_sponsor_type into Sponsor_Type table and store corresponding id
+        sponsor_type_id = insert_2column_table('Sponsor_Type', 'sponsor_type', lead_sponsor_type)
 
-    #Insert trial's lead_sponsor and sponsor_type_id into Sponsor table
-    #(sponsor_name and sponsor_type_id repsectively)
-    sponsor_id = insert_3column_table('Sponsor',
-                                        'sponsor_name', lead_sponsor,
-                                        'sponsor_type_id', sponsor_type_id)
+        #Insert trial's lead_sponsor and sponsor_type_id into Sponsor table
+        #(sponsor_name and sponsor_type_id repsectively)
+        sponsor_id = insert_3column_table('Sponsor',
+                                            'sponsor_name', lead_sponsor,
+                                            'sponsor_type_id', sponsor_type_id)
 
-    #Insert trial's study_type into Study_Type table and store corresponding id
-    study_type_id = insert_2column_table('Study_Type', 'study_type', study_type)
+        #Insert trial's study_type into Study_Type table and store corresponding id
+        study_type_id = insert_2column_table('Study_Type', 'study_type', study_type)
 
-    #Insert trial's study_design into Study_Design table and store corresponding id
-    study_design_id = insert_2column_table('Study_Design', 'study_design', study_design)
+        #Insert trial's study_design into Study_Design table and store corresponding id
+        study_design_id = insert_2column_table('Study_Design', 'study_design', study_design)
 
-    #Insert trial's phase into Phases table and store corresponding id
-    phase_id = insert_2column_table('Phases', 'phase', phase)
+        #Insert trial's phase into Phases table and store corresponding id
+        phase_id = insert_2column_table('Phases', 'phase', phase)
 
-    #Iterate through tuple of countries in trial and insert each into Country table
-    #also store each corresponding id and enter it into Country_Link table, along with nct_id
-    for item in country:
-        country_id = insert_2column_table('Country', 'country', item)
-        insert_link_table('Country_Link', 'country_id', country_id, 'nct_id', nct)
-
-
-    #Iterate through tuple of conditions in trial and insert each into Conditions table
-    #also store each corresponding id and enter it into Conditions_Link table, along with nct_id
-    for item in condition:
-        condition_id = insert_2column_table('Conditions', 'condition', csv_data.bucket_conditions(item))
-        insert_link_table('Conditions_Link', 'condition_id', condition_id, 'nct_id', nct)
+        #Iterate through tuple of countries in trial and insert each into Country table
+        #also store each corresponding id and enter it into Country_Link table, along with nct_id
+        for item in country:
+            country_id = insert_2column_table('Country', 'country', item)
+            insert_link_table('Country_Link', 'country_id', country_id, 'nct_id', nct)
 
 
-    #Iterate through trials' primary_endpoint tuple and insert each into Endpoints table
-    #also store each corresponding id and enter it Endpoint_Link table, along with nct_id
-    for item in primary_endpoint:
-        endpoint_id = insert_3column_table('Endpoints',
-                                            'endpoint', item,
-                                            'endpoint_type', 1)
-        insert_link_table('Endpoint_Link',
-                            'endpoint_id', endpoint_id, 'nct_id', nct)
+        #Iterate through tuple of conditions in trial and insert each into Conditions table
+        #also store each corresponding id and enter it into Conditions_Link table, along with nct_id
+        for item in condition:
+            condition_id = insert_2column_table('Conditions', 'condition', csv_data.bucket_conditions(item))
+            insert_link_table('Conditions_Link', 'condition_id', condition_id, 'nct_id', nct)
 
 
-    #Iterate through trials' secondary_endpoint tuple and insert each into Endpoints table
-    #also store each corresponding id and enter it Endpoint_Link table, along with nct_id
-    for item in secondary_endpoint:
-        endpoint_id = insert_3column_table('Endpoints',
-                                            'endpoint', item,
-                                            'endpoint_type', 2)
-        insert_link_table('Endpoint_Link',
-                            'endpoint_id', endpoint_id, 'nct_id', nct)
+        #Iterate through trials' primary_endpoint tuple and insert each into Endpoints table
+        #also store each corresponding id and enter it Endpoint_Link table, along with nct_id
+        for item in primary_endpoint:
+            endpoint_id = insert_3column_table('Endpoints',
+                                                'endpoint', item,
+                                                'endpoint_type', 1)
+            insert_link_table('Endpoint_Link',
+                                'endpoint_id', endpoint_id, 'nct_id', nct)
 
 
-    #Iterate through dicts contained within intervention_details (1 dict per intervention)
-    for item in intervention_details:
-
-        #Insert intervention's type into Intervention_Type table and store intervention_type_id
-        intervention_type_id = insert_2column_table('Intervention_Type',
-        'intervention_type', item['type'])
-
-        #Insert intervention's name, intervention_type_id and MoA_id
-        #(placeholder for now) into Interventions table
-        intervention_id = insert_4column_table('Interventions',
-        'intervention', item['intervention'],
-        'intervention_type_id', intervention_type_id,
-        'moa_id', 999)
-
-        #Iterate through items contained within other_name tuple and insert
-        #them into Intervention_Other_Names table, along with the corresponding
-        #intervention_id
-        for name in item['other_name']:
-            insert_3column_table('Intervention_Other_Names',
-            'other_name', name,
-            'intervention_id', intervention_id)
-
-        # Iterate through items contained within arm_group tuple and insert
-        # them into Intervention_Other_Names table, along with the corresponding
-        # intervention_id
-        for arm in item['arm_group']:
-            study_arm_id = insert_constrained3column_table('Study_Arms',
-                                            'nct_id', nct,
-                                            'arm_label', arm)
-            insert_link_table('Interventions_Link',
-                                            'intervention_id', intervention_id,
-                                            'study_arm_id', study_arm_id)
+        #Iterate through trials' secondary_endpoint tuple and insert each into Endpoints table
+        #also store each corresponding id and enter it Endpoint_Link table, along with nct_id
+        for item in secondary_endpoint:
+            endpoint_id = insert_3column_table('Endpoints',
+                                                'endpoint', item,
+                                                'endpoint_type', 2)
+            insert_link_table('Endpoint_Link',
+                                'endpoint_id', endpoint_id, 'nct_id', nct)
 
 
-    #Insert data into Trials table
-    cur.execute("""INSERT OR IGNORE INTO Trials (nct,
-                                                brief_title,
-                                                official_title,
-                                                phase_id,
-                                                status,
-                                                enrollment,
-                                                study_type_id,
-                                                study_design_id,
-                                                start_date,
-                                                completion_date,
-                                                primary_completion_date,
-                                                verification_date,
-                                                last_changed_date,
-                                                sponsor_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (nct,
+        #Iterate through dicts contained within intervention_details (1 dict per intervention)
+        for item in intervention_details:
+
+            #Insert intervention's type into Intervention_Type table and store intervention_type_id
+            intervention_type_id = insert_2column_table('Intervention_Type',
+            'intervention_type', item['type'])
+
+            #Insert intervention's name, intervention_type_id and MoA_id
+            #(placeholder for now) into Interventions table
+            intervention_id = insert_4column_table('Interventions',
+            'intervention', item['intervention'],
+            'intervention_type_id', intervention_type_id,
+            'moa_id', 999)
+
+            #Iterate through items contained within other_name tuple and insert
+            #them into Intervention_Other_Names table, along with the corresponding
+            #intervention_id
+            for name in item['other_name']:
+                insert_3column_table('Intervention_Other_Names',
+                'other_name', name,
+                'intervention_id', intervention_id)
+
+            # Iterate through items contained within arm_group tuple and insert
+            # them into Intervention_Other_Names table, along with the corresponding
+            # intervention_id
+            for arm in item['arm_group']:
+                study_arm_id = insert_constrained3column_table('Study_Arms',
+                                                'nct_id', nct,
+                                                'arm_label', arm)
+                insert_link_table('Interventions_Link',
+                                                'intervention_id', intervention_id,
+                                                'study_arm_id', study_arm_id)
+
+
+        #Insert data into Trials table
+        cur.execute("""INSERT OR IGNORE INTO Trials (nct,
                                                     brief_title,
                                                     official_title,
                                                     phase_id,
@@ -271,7 +258,21 @@ for xml in get_nct_list(folderpath):
                                                     primary_completion_date,
                                                     verification_date,
                                                     last_changed_date,
-                                                    sponsor_id))
+                                                    sponsor_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (nct,
+                                                        brief_title,
+                                                        official_title,
+                                                        phase_id,
+                                                        status,
+                                                        enrollment,
+                                                        study_type_id,
+                                                        study_design_id,
+                                                        start_date,
+                                                        completion_date,
+                                                        primary_completion_date,
+                                                        verification_date,
+                                                        last_changed_date,
+                                                        sponsor_id))
 
 
-    conn.commit()
+        conn.commit()
