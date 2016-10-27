@@ -74,6 +74,7 @@ def insert_3column_table(table_name, column_name1, attribute1, column_name2, att
     cur.execute('SELECT id FROM {} WHERE {} = ?'.format(table_name, column_name1), (attribute1, ))
     return cur.fetchone()[0]
 
+
 def insert_constrained3column_table(table_name, column_name1, attribute1, column_name2, attribute2):
     """Docstring TBD - USES BOTH ATTRIBUTES TO SEARCH FOR THE CORRESPONDING ID"""
 
@@ -217,15 +218,15 @@ def enter_xml_data():
             intervention_type_id = insert_2column_table('Intervention_Type',
             'intervention_type', item['type'])
 
-            # moa_id = insert_2column_table('MoA',
-            # 'moa', csv_data.assign_moa(item['intervention']))
+            moa_id = insert_2column_table('MoA',
+            'moa', csv_data.get_moa(item['intervention']))
 
             #Insert intervention's name, intervention_type_id and MoA_id
             #(placeholder for now) into Interventions table
             intervention_id = insert_4column_table('Interventions',
             'intervention', item['intervention'],
             'intervention_type_id', intervention_type_id,
-            'moa_id', 999)
+            'moa_id', moa_id)
 
             #Iterate through items contained within other_name tuple and insert
             #them into Intervention_Other_Names table, along with the corresponding
