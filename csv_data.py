@@ -2,6 +2,11 @@
 
 import csv
 import sqlite3
+import sys
+
+#Set default encoding as utf-8
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 #Define files accessed in module
 dbname = 'main_db.sqlite3'
@@ -86,38 +91,78 @@ def sync_moa_list():
 #### perhaps make this dimension flexible too if possible, will be able to use this to update
 #### all tables (either outright or as a template)
 
-#Create a function that searches a column in a table to find values equal to
-# a specified value. Returns the value of a specified row in that column ('id' by default)
-#Returns the value(s) as a list of tuples
-def get_value(table_name, column_name, search_value, column ='id'):
+#Create a function that SELECTS all data from the Interventions Table, including
+#intervention_type and moa. SELECT id is optional, not returned by default.
+#Returns a list of tuples, each tuple being a unique row
+def select_interventions_data(get_id = False):
     """TBD"""
 
-    #Run query
-    cur.execute("""SELECT {} FROM {} WHERE {} = ?""".format(column, table_name, column_name), (search_value,))
+    if get_id:
+        script = """SELECT Interventions.id,
+                                Interventions.intervention,
+                                Intervention_Type.intervention_type,
+                                Moa.moa
 
-    #Check to make sure only one id is returned, otherwise data assumptions are wrong
+                        FROM Interventions
+                        JOIN Intervention_Type
+                        JOIN MoA
+                        ON Interventions.intervention_type_id = Intervention_Type.id
+                        AND Interventions.moa_id = Moa.id"""
+    else:
+        script = """SELECT Interventions.intervention,
+                                Intervention_Type.intervention_type,
+                                Moa.moa
+
+                        FROM Interventions
+                        JOIN Intervention_Type
+                        JOIN MoA
+                        ON Interventions.intervention_type_id = Intervention_Type.id
+                        AND Interventions.moa_id = Moa.id"""
+
+    #Run query
+    cur.execute(script)
+
+    #Put query_results into a stable list
     query_results = cur.fetchall()
 
-    if len(query_results) == 1:
-        #return the first value (and only value), of the first tuple (and only tuple)
-        return query_results[0][0]
-    if len(query_results) > 1:
-        return query_results
-    else:
-        raise ValueError('query_results has len(value) == 0; it is an empty list')
+    return query_results
+
+    ###Drop relevant data into one file, all from db (dont overwrite)
+    ###Upload data from a second file, whose name you must enter to update database
+    ###Could I have a safegaurd in upload step? if there are less nulls in database, then request confirmation
+
+
+###Creates a csv_file from query_results (should be a list of tuples, each tuple being a row)
+###Default name of csv_file is: interventions_data.csv
+###Items in csv file are sorted by first item in each row by defualt
+def create_csv(query_results, csv_file = 'interventions_data.csv', sort_first_column = True):
+    """TBD"""
+
+    ##Sort query_results list by first value in each tuple:
+    if sort_first_column:
+        query_results.sort()
+
+
+    with open(csv_file, 'a') as f:
+
+        for row_tuple in query_results:
+            row = ''
+            for item in row_tuple:
+                row = row + item +','
+            row = row + '\n'
+            f.write(row)
 
     return None
 
-###Per above to do list, now I need to enter the interventions with no MoA id into csv file
-def add_to_csv(): ##VARIABLES TBD
-    """TBD"""
+###Create a function that returns an intervention's MoA, or NULL if it is not available
+###Data is read from moa_list.csv, which is assumed to have the structure:
 
-    ##Need to manipulate this list:
-    values = get_value('Interventions', 'moa_id', get_value('MoA', 'moa', 'NULL'), 'intervention')
-    print values
-    print len(values)
+###This should change as well!!
 
-
+###Use this function one time to ready data from (cleaned) moa_list.csv, and add it to its own
+##database. Then get_moa should query that database for an intervention, and return its MoA
+###The intervention database will have more interventions than the Interventions table in my database
+###Interventions with NULL MoAs in function above should then be added to the new database
 def get_moa(intervention, data = 'moa_list.csv'):
     """TBD"""
 
