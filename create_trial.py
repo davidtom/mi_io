@@ -305,36 +305,40 @@ class Trial(object):
         #using large patterns (for fear of compromising the data). Rest of data
         #cleaning will have to be done at analysis phase (good opportunity to learn python pandas!)
 
-        #make all of these lower case to allow 'stacking'  - might want to do that for all text variables
-        #other names, country (?), end points?, CONDITIONS
+        #make all of these lower case to allow 'stacking'
+        #also replace commas with semicolons, to avoid issues with creating csv files later
+
+            #Replace commas in intervention_name with semicolons, make all lower case
+            clean_intervention_name = intervention_name.replace(',', ';').lower()
 
             #Create 'flag' variables to denote if 'placebo' or 'and/+' exists anywhere in intervention
             placebo_flag = False
 
             concatentation_flag = False
 
-            for i in intervention_name.lower().split():
-
-                #If placebo is anywhere in intervention name, flag it to be corrected
-                if i in ['placebo']:
-                    placebo_flag = True
-                #If + or 'and' is in the intervention name, flag that there is a concatenation
-                if i in ['+', 'and', 'plus']:
-                    concatentation_flag = True
-
             #define a string variable to store concatentation pattern to look for
-            pat = "\+ | and | plus"
+            concat_pat = "\+|and|plus"
+
+            #If placebo is anywhere in intervention name, flag it to be corrected
+            if len(re.findall('placebo', clean_intervention_name)) > 0:
+                placebo_flag = True
+
+            #If a string in concat_pat is in the intervention name, flag that there is a concatenation
+            if len(re.findall(concat_pat, clean_intervention_name)) > 0:
+                concatentation_flag = True
+
 
             #If a placebo is in string, return placebo
             if placebo_flag and not concatentation_flag:
                 return ('placebo',)
             #If a concatentation item is in string, return a list of split items
             elif concatentation_flag:
-                return tuple(re.split(pat, intervention_name))
+                return tuple(re.split(concat_pat, clean_intervention_name))
             #If neither flags are triggered (ie nivo, placebo, ipi, etc.)
             #return intervention_name as is
             else:
-                return (intervention_name,)
+                return (clean_intervention_name,)
+
 
         #Create list that will store intervention dicts (will be returned as a tuple)
         intervention_details_list = list()
@@ -360,7 +364,7 @@ class Trial(object):
                 intervention_dict = dict()
 
                 #Store relevant details for the intervention
-                intervention_dict['intervention'] = intervention.lower().strip()
+                intervention_dict['intervention'] = intervention.strip()
 
                 try:
                     intervention_dict['type'] = block.find('intervention_type').text.lower().strip()
