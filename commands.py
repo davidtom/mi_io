@@ -26,7 +26,7 @@ def run_controlpanel():
         if command == 'trialdb':
             create_db.create_trial_database()
 
-        if command == 'moadb':
+        elif command == 'moadb':
             create_db.create_moa_database()
 
         elif command == 'xmldata':
