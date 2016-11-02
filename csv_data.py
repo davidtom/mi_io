@@ -77,20 +77,6 @@ def sync_moa_list():
     specific intervention is in  most_list.csv"""
 
 
-
-##def
-#########TO DO
-#1) Clean up moa_list.csv. Use python to help clean the data! (ie splitting up rows, making sure no repeats)
-#1.5) Recreate database and enter full data set into it
-#2) Create function to query a 4 column table (or any dimension table, right?) based on the value of an
-#### attribute (query_table(TABLENAME, COLUMNNAME, ATTRIBUTETOSEARCHFOR
-#### or something))
-#3) Use output of above, which returns the name of the attributes == ATTRIBUTETOSEARCHFOR
-#### to add rows to moa_list.csv. Again make sure there are no duplicates
-#4) Create a function that will update a table (id change Null to a value; dont use INSERT IGNORE)
-#### perhaps make this dimension flexible too if possible, will be able to use this to update
-#### all tables (either outright or as a template)
-
 #Create a function that SELECTS all data from the Interventions Table, including
 #intervention_type and moa. SELECT id is optional, not returned by default.
 #Returns a list of tuples, each tuple being a unique row
@@ -127,10 +113,6 @@ def select_interventions_data(get_id = False):
 
     return query_results
 
-    ###Drop relevant data into one file, all from db (dont overwrite)
-    ###Upload data from a second file, whose name you must enter to update database
-    ###Could I have a safegaurd in upload step? if there are less nulls in database, then request confirmation
-
 
 ###Creates a csv_file from query_results (should be a list of tuples, each tuple being a row)
 ###Default name of csv_file is: interventions_data.csv
@@ -154,10 +136,6 @@ def create_csv(query_results, csv_file = 'interventions_data.csv', sort_first_co
 
     return None
 
-###Create a function that returns an intervention's MoA, or NULL if it is not available
-###Data is read from moa_list.csv, which is assumed to have the structure:
-
-###This should change as well!!
 
 ###Use this function one time to ready data from (cleaned) moa_list.csv, and add it to its own
 ##database. Then get_moa should query that database for an intervention, and return its MoA
