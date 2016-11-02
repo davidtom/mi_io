@@ -55,7 +55,7 @@ def get_methods():
 
 #Define function that inputs data into a table with 2 columns (id and a table-specific value),
 #and returns a particular value's id (primary key)
-def insert_2column_table(table_name, column_name, attribute):
+def insert_2column_table(table_name, column_name, attribute, cur = cur):
     """Docstring TBD"""
 
     cur.execute("""
@@ -65,7 +65,7 @@ def insert_2column_table(table_name, column_name, attribute):
     return cur.fetchone()[0]
 
 
-def insert_3column_table(table_name, column_name1, attribute1, column_name2, attribute2):
+def insert_3column_table(table_name, column_name1, attribute1, column_name2, attribute2, cur = cur):
     """Docstring TBD - ATTRIBUTE SEARCHED FOR TO FIND THE CORRESPONDING ID SHOULD BE COLUMN_NAME1/ATTRIBUTE1"""
 
     cur.execute("""
@@ -75,7 +75,7 @@ def insert_3column_table(table_name, column_name1, attribute1, column_name2, att
     return cur.fetchone()[0]
 
 
-def insert_constrained3column_table(table_name, column_name1, attribute1, column_name2, attribute2):
+def insert_constrained3column_table(table_name, column_name1, attribute1, column_name2, attribute2, cur = cur):
     """Docstring TBD - USES BOTH ATTRIBUTES TO SEARCH FOR THE CORRESPONDING ID"""
 
     cur.execute("""
@@ -86,7 +86,7 @@ def insert_constrained3column_table(table_name, column_name1, attribute1, column
 
 
 def insert_4column_table(table_name, column_name1, attribute1,
-    column_name2, attribute2, column_name3, attribute3):
+    column_name2, attribute2, column_name3, attribute3, cur = cur):
     """Docstring TBD - ATTRIBUTE SEARCHED FOR TO FIND THE CORRESPONDING ID SHOULD BE COLUMN_NAME1/ATTRIBUTE1"""
 
     cur.execute("""
@@ -98,7 +98,7 @@ def insert_4column_table(table_name, column_name1, attribute1,
 
 #Define a function that inputs data into a link table. Utilizes a value's id (primary key)
 #returned from a previous insert function
-def insert_link_table(table_name, column_name1, attribute1, column_name2, attribute2):
+def insert_link_table(table_name, column_name1, attribute1, column_name2, attribute2, cur = cur):
         cur.execute('''INSERT OR REPLACE INTO {}
             ({}, {}) VALUES ( ?, ? )'''.format(table_name, column_name1, column_name2),
             (attribute1, attribute2))
