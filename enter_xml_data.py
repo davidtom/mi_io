@@ -11,7 +11,7 @@ import csv_data
 
 
 #Enter files accessed in module
-dbname = 'main_db.sqlite3'
+dbname = 'trial_db.sqlite3'
 foldername = 'XML_folder'
 folderpath = os.getcwd() + '/' + foldername +'/'
 

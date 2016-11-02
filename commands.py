@@ -9,8 +9,9 @@ import csv_data
 def run_controlpanel():
 
     instructions = '''Commands:
-    'createdb' = python create_db.py
-    'enterdata' = python enter_xml_data.py
+    'trialdb' = create_db.create_trial_database()
+    'moadb' = create_db.create_moa_database()
+    'xmldata' = enter_data.py
     'test' = python test_script.py
     'c' = print commands
     'q' = exit
@@ -22,10 +23,13 @@ def run_controlpanel():
 
         command = raw_input('Enter command:')
 
-        if command == 'createdb':
-            create_db.create_database()
+        if command == 'trialdb':
+            create_db.create_trial_database()
 
-        elif command == 'enterdata':
+        if command == 'moadb':
+            create_db.create_moa_database()
+
+        elif command == 'xmldata':
             enter_xml_data.enter_xml_data()
 
         elif command == 'test':
