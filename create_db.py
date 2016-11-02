@@ -1,15 +1,17 @@
 """
-Module Purpose: Creates database, tables, and constraints that will contain
+Module Purpose: Creates databases, tables, and constraints that will contain
 all data pulled from clinicaltrials.gov using sqlite3
 
 input: none
-output: sqlite3 database
+output:
+    trial_db.sqlite3
+    moa_db.sqlite3
 """
 
 import sqlite3
 
-def create_database():
-    conn = sqlite3.connect("main_db.sqlite3")
+def create_trial_database(dbname = "trial_db.sqlite3"):
+    conn = sqlite3.connect(dbname)
     curr = conn.cursor()
 
 
@@ -137,9 +139,37 @@ def create_database():
 
     ''')
 
+
+def create_moa_database(dbname = "moa_db.sqlite3"):
+    conn = sqlite3.connect(dbname)
+    curr = conn.cursor()
+
+    curr.executescript('''
+    CREATE TABLE IF NOT EXISTS Agent (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+        agent TEXT UNIQUE,
+        moa_id INTEGER,
+        source TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS MoA (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    moa TEXT UNIQUE,
+    macro_moa_id INTEGER
+    );
+
+    CREATE TABLE IF NOT EXISTS Macro_MoA (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    macro_moa TEXT UNIQUE
+    );
+
+    ''')
+
+
 ##If this module is run as the main program (not imported into another module)
 ## this code will run (because __name__  is set to "__main__"). If the file is
 ## being imported from another module __name__ will be set to the modeules's
 ## name (and code below does not run)
 if __name__ == "__main__":
-    create_database()
+    create_trial_database()
+    create_moa_database()
