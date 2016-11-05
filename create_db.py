@@ -142,9 +142,9 @@ def create_trial_database(dbname = "trial_db.sqlite3"):
 
 def create_moa_database(dbname = "moa_db.sqlite3"):
     conn = sqlite3.connect(dbname)
-    curr = conn.cursor()
+    cur = conn.cursor()
 
-    curr.executescript('''
+    cur.executescript('''
     CREATE TABLE IF NOT EXISTS Agent (
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
         agent TEXT UNIQUE,
