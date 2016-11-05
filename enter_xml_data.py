@@ -1,5 +1,5 @@
-"""TO BE COMPLETED - reads data from a folder containing xmls files and enters
-it into a database (defined in module); for use with first data pull only(?).
+"""Code here is all commented out because it has been moved to db_class.py.
+Leaving this module to be used as a reference, if necessary.
 """
 
 import sqlite3
