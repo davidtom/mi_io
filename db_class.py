@@ -10,7 +10,11 @@ import re
 import csv
 import create_trial as ct
 import csv_data
-import os.path
+import sys
+
+#Set default encoding as utf-8
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 
 #
@@ -191,6 +195,11 @@ class DB(object):
                 for filename in os.listdir(xml_folder_path):
                     nct_list.extend(re.findall('^NCT.*\.xml$', filename))
 
+                #Create a reference dictionary for reference/bucket conditions
+                #used when inserting data into condition table to try to clean
+                #data a bit upfront
+                ref_dict = test.create_reference_condition_dict()
+
                 ##Iterate through all nct*.xml files in xml_folder and add data to db
                 for xml in nct_list:
 
@@ -230,7 +239,7 @@ class DB(object):
                     #Iterate through tuple of conditions in trial and insert each into Conditions table
                     #also store each corresponding id and enter it into Conditions_Link table, along with nct_id
                     for item in t.get_condition():
-                        condition_id = self.insert_2column_table('Conditions', 'condition', csv_data.bucket_conditions(item))
+                        condition_id = self.insert_2column_table('Conditions', 'condition', self.return_reference_condition(item, ref_dict))
                         self.insert_link_table('Conditions_Link', 'condition_id', condition_id, 'nct_id', nct)
 
 
@@ -324,6 +333,11 @@ class DB(object):
 
                     self.conn.commit()
 
+                #Provide confirmation that db was created
+                if os.path.isfile(self.db_name):
+                    print '{} created successfully.'.format(self.db_name)
+                else:
+                    print 'Error creating Database'
 
 
             elif type_str == 'moa':
@@ -355,11 +369,15 @@ class DB(object):
                 #   *assumes structure of: agent,moa, moa_bucket,source
                 #   *assumes Headers exist
                 #   *INSERT OR IGNORE - cannot overwrite data with this function
+
                 csv_file = 'moa_list.csv'
                 headers = True
 
+                #set up path for csv_file
+                csv_file_path = os.path.join(self.base_dir, csv_file)
+
                 #Open csv_file
-                with open(csv_file, 'rU+') as csv_f:
+                with open(csv_file_path, 'rU+') as csv_f:
 
                     #Read contents of csv_file
                     f = csv.reader(csv_f, delimiter=',')
@@ -405,14 +423,18 @@ class DB(object):
 
                         self.conn.commit()
 
+                #Provide confirmation that db was created
+                if os.path.isfile(self.db_name):
+                    print '{} created successfully.'.format(self.db_name)
+                else:
+                    print 'Error creating Database'
+
             else:
                 raise ValueError('Unrecognized database type string')
 
         else:
             raise ValueError('Database {} already exists in current folder'.format(self.db_name))
 
-    def test(self):
-        print 'right indent'
 
     #Define function that inputs data into a table with 2 columns (id and a table-specific value),
     #and returns a particular value's id (primary key)
@@ -483,5 +505,36 @@ class DB(object):
                 (attribute1, attribute2))
             return None
 
-test = DB('moa_db_test.sqlite3')
-test.create_db('moa')
+    #Create function that reads a csv file containing conditions and their
+    #reference condition/condition bucket and creates a dictionary to store data
+    def create_reference_condition_dict(self, csv_file = 'condition_buckets.csv'):
+
+        #set up path for file
+        csv_file_path = os.path.join(self.base_dir, csv_file)
+
+        #Open file as a csv reader
+        with open(csv_file_path, 'rU+') as csv_f:
+            f = csv.reader(csv_f, delimiter=',')
+
+            #remove and save headers from reader object
+            headers = f.next()
+
+            #iterate through reader object and create reference condition dictionary
+            reference_condition_dict = dict()
+
+            for row in f:
+                reference_condition_dict[row[0].lower()] = row[1]
+
+            return reference_condition_dict
+
+    #Create file that checks a condition against a reference dict and returns
+    #reference condition/condition bucket. If condition is not in reference dict
+    #returns condition
+    def return_reference_condition(self, condition, reference_dict):
+        return reference_dict.get(condition.lower(), condition)
+
+
+
+
+test = DB('trial_db.sqlite3')
+test.create_db('trial')
