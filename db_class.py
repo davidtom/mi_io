@@ -195,90 +195,48 @@ class DB(object):
                 for xml in nct_list:
 
                     #Create an object of class Trial from current xml file
-                    active_trial = ct.Trial(os.path.join(xml_folder_path, xml))
+                    t = ct.Trial(os.path.join(xml_folder_path, xml))
 
-                    #Create local variables for all attributes of the trial
-                    primary_completion_date = active_trial.get_primary_completion_date()
+                    #Create local variable for nct attribute of trial
+                            ##need to change once I update trial primary key
 
-                    status = active_trial.get_status()
-
-                    enrollment = active_trial.get_enrollment()
-
-                    lead_sponsor_type = active_trial.get_lead_sponsor_type()
-
-                    start_date = active_trial.get_start_date()
-
-                    intervention_details = active_trial.get_intervention_details()
-
-                    file_name = active_trial.get_file_name()
-
-                    completion_date = active_trial.get_completion_date()
-
-                    primary_endpoint = active_trial.get_primary_endpoint()
-
-                    nct = active_trial.get_nct()
-
-                    brief_title = active_trial.get_brief_title()
-
-                    official_title = active_trial.get_official_title()
-
-                    phase = active_trial.get_phase()
-
-                    study_type = active_trial.get_study_type()
-
-                    condition = active_trial.get_condition()
-
-                    lead_sponsor = active_trial.get_lead_sponsor()
-
-                    first_received_date = active_trial.get_first_received_date()
-
-                    verification_date = active_trial.get_verification_date()
-
-                    last_changed_date = active_trial.get_last_changed_date()
-
-                    study_design = active_trial.get_study_design()
-
-                    secondary_endpoint = active_trial.get_secondary_endpoint()
-
-                    study_arm = active_trial.get_study_arm()
-
-                    country = active_trial.get_country()
+                    nct = t.get_nct()
 
                     #Insert trial's lead_sponsor_type into Sponsor_Type table and store corresponding id
-                    sponsor_type_id = self.insert_2column_table('Sponsor_Type', 'sponsor_type', lead_sponsor_type)
+                    sponsor_type_id = self.insert_2column_table('Sponsor_Type', 'sponsor_type', t.get_lead_sponsor_type())
 
                     #Insert trial's lead_sponsor and sponsor_type_id into Sponsor table
                     #(sponsor_name and sponsor_type_id repsectively)
                     sponsor_id = self.insert_3column_table('Sponsor',
-                                                        'sponsor_name', lead_sponsor,
+                                                        'sponsor_name', t.get_lead_sponsor(),
                                                         'sponsor_type_id', sponsor_type_id)
 
                     #Insert trial's study_type into Study_Type table and store corresponding id
-                    study_type_id = self.insert_2column_table('Study_Type', 'study_type', study_type)
+                    study_type_id = self.insert_2column_table('Study_Type', 'study_type', t.get_study_type())
 
                     #Insert trial's study_design into Study_Design table and store corresponding id
-                    study_design_id = self.insert_2column_table('Study_Design', 'study_design', study_design)
+                    study_design_id = self.insert_2column_table('Study_Design', 'study_design', t.get_study_design())
 
                     #Insert trial's phase into Phases table and store corresponding id
-                    phase_id = self.insert_2column_table('Phases', 'phase', phase)
+                    phase_id = self.insert_2column_table('Phases', 'phase', t.get_phase())
 
                     #Iterate through tuple of countries in trial and insert each into Country table
                     #also store each corresponding id and enter it into Country_Link table, along with nct_id
-                    for item in country:
+                    for item in t.get_country():
                         country_id = self.insert_2column_table('Country', 'country', item)
                         self.insert_link_table('Country_Link', 'country_id', country_id, 'nct_id', nct)
 
 
                     #Iterate through tuple of conditions in trial and insert each into Conditions table
                     #also store each corresponding id and enter it into Conditions_Link table, along with nct_id
-                    for item in condition:
+                    for item in t.get_condition():
                         condition_id = self.insert_2column_table('Conditions', 'condition', csv_data.bucket_conditions(item))
                         self.insert_link_table('Conditions_Link', 'condition_id', condition_id, 'nct_id', nct)
 
 
                     #Iterate through trials' primary_endpoint tuple and insert each into Endpoints table
                     #also store each corresponding id and enter it Endpoint_Link table, along with nct_id
-                    for item in primary_endpoint:
+                    for item in t.get_primary_endpoint():
                         endpoint_id = self.insert_3column_table('Endpoints',
                                                             'endpoint', item,
                                                             'endpoint_type', 1)
@@ -288,7 +246,7 @@ class DB(object):
 
                     #Iterate through trials' secondary_endpoint tuple and insert each into Endpoints table
                     #also store each corresponding id and enter it Endpoint_Link table, along with nct_id
-                    for item in secondary_endpoint:
+                    for item in t.get_secondary_endpoint():
                         endpoint_id = self.insert_3column_table('Endpoints',
                                                             'endpoint', item,
                                                             'endpoint_type', 2)
@@ -297,7 +255,7 @@ class DB(object):
 
 
                     #Iterate through dicts contained within intervention_details (1 dict per intervention)
-                    for item in intervention_details:
+                    for item in t.get_intervention_details():
 
                         #Insert intervention's type into Intervention_Type table and store intervention_type_id
                         intervention_type_id = self.insert_2column_table('Intervention_Type',
@@ -349,18 +307,18 @@ class DB(object):
                                                                 last_changed_date,
                                                                 sponsor_id)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (nct,
-                                                                    brief_title,
-                                                                    official_title,
+                                                                    t.get_brief_title(),
+                                                                    t.get_official_title(),
                                                                     phase_id,
-                                                                    status,
-                                                                    enrollment,
+                                                                    t.get_status(),
+                                                                    t.get_enrollment(),
                                                                     study_type_id,
                                                                     study_design_id,
-                                                                    start_date,
-                                                                    completion_date,
-                                                                    primary_completion_date,
-                                                                    verification_date,
-                                                                    last_changed_date,
+                                                                    t.get_start_date(),
+                                                                    t.get_completion_date(),
+                                                                    t.get_primary_completion_date(),
+                                                                    t.get_verification_date(),
+                                                                    t.get_last_changed_date(),
                                                                     sponsor_id))
 
 
@@ -469,5 +427,5 @@ class DB(object):
                 (attribute1, attribute2))
             return None
 
-test = DB('test.sqlite3')
+test = DB('main_db_test.sqlite3')
 test.create_db('trial')
