@@ -328,7 +328,7 @@ class DB(object):
 
             elif type_str == 'moa':
 
-                cur.executescript('''
+                self.cur.executescript('''
                 CREATE TABLE IF NOT EXISTS Agent (
                     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
                     agent TEXT UNIQUE,
@@ -348,6 +348,62 @@ class DB(object):
                 );
 
                 ''')
+
+                #Read data from csv file (moa_list.csv by default)
+                #and enter all its data into the database
+                #Note:
+                #   *assumes structure of: agent,moa, moa_bucket,source
+                #   *assumes Headers exist
+                #   *INSERT OR IGNORE - cannot overwrite data with this function
+                csv_file = 'moa_list.csv'
+                headers = True
+
+                #Open csv_file
+                with open(csv_file, 'rU+') as csv_f:
+
+                    #Read contents of csv_file
+                    f = csv.reader(csv_f, delimiter=',')
+
+                    #Strip/store headers from csv_file if they exist
+                    headers_str = None
+                    if headers:
+                        headers_str = f.next()
+
+                    #Iterate through rows of csv_file and insert data into
+                    #appropriate Tables
+
+                    for row in f:
+
+                        agent = row[0].lower().strip()
+                        moa = row[1].lower().strip()
+                        macro_moa = row[2].lower().strip()
+                        source = row[3].lower().strip()
+
+                        ##Debugging Code
+                        # print 'agent: {}'.format(agent)
+                        # print 'moa: {}'.format(moa)
+                        # print 'macro_moa: {}'.format(macro_moa)
+                        # print 'source: {}'.format(source)
+                        # print '---'
+
+                        #Insert data into Macro_MoA table and get associated id
+                        macro_moa_id = self.insert_2column_table('Macro_MoA',
+                                                                'macro_moa', macro_moa)
+
+                        #Insert data into MoA table and get associated id
+                        moa_id = self.insert_3column_table('MoA',
+                                                        'moa', moa,
+                                                        'macro_moa_id', macro_moa_id)
+
+                        #Insert data into Agent table
+                        self.cur.execute("""INSERT OR IGNORE INTO Agent (agent,
+                                                                    moa_id,
+                                                                    source)
+                                        VALUES (?, ?, ?)""", (agent,
+                                                                moa_id,
+                                                                source))
+
+                        self.conn.commit()
 
             else:
                 raise ValueError('Unrecognized database type string')
@@ -427,5 +483,5 @@ class DB(object):
                 (attribute1, attribute2))
             return None
 
-test = DB('main_db_test.sqlite3')
-test.create_db('trial')
+test = DB('moa_db_test.sqlite3')
+test.create_db('moa')
