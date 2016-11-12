@@ -41,7 +41,7 @@ class DB(object):
         if os.path.isfile(db_name):
             self.conn = sqlite3.connect('{}'.format(db_name))
             self.cur = self.conn.cursor()
-            print 'Successfully connected to existing database'
+            print 'Successfully connected to existing database: {}'.format(db_name)
         else:
             print "DB Object created, but no database of specified name exists in current folder.\nRun create_db() to create a database."
 
@@ -537,4 +537,3 @@ class DB(object):
 
 
 test = DB('trial_db.sqlite3')
-test.create_db('trial')
