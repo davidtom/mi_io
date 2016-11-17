@@ -8,12 +8,12 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-#Define files accessed in module
-dbname = 'main_db.sqlite3'
-
-#Connect to db
-conn = sqlite3.connect(dbname)
-cur = conn.cursor()
+# #Define files accessed in module
+# dbname = 'main_db.sqlite3'
+#
+# #Connect to db
+# conn = sqlite3.connect(dbname)
+# cur = conn.cursor()
 
 ###Create functions to recategorize a specific or differently named condition
 ###into a broader condition 'bucket' (ie NSCLC rather than non-small cell lung cancer)
@@ -141,20 +141,20 @@ def create_csv(query_results, csv_file = 'interventions_data.csv', sort_first_co
 ##database. Then get_moa should query that database for an intervention, and return its MoA
 ###The intervention database will have more interventions than the Interventions table in my database
 ###Interventions with NULL MoAs in function above should then be added to the new database
-# def get_moa(intervention, data = 'moa_list.csv'):
-#     """TBD"""
-#
-#     with open(data, 'rU+') as csv_file:
-#
-#         f = csv.reader(csv_file, delimiter=',')
-#
-#         for row in f:
-#             if intervention.lower().strip() == row[0].lower().strip():
-#                 return row[1].lower().strip()
-#             else:
-#                 pass
-#
-#     return 'NULL'
+def get_moa(intervention, data = 'moa_list.csv'):
+    """TBD"""
+
+    with open(data, 'rU+') as csv_file:
+
+        f = csv.reader(csv_file, delimiter=',')
+
+        for row in f:
+            if intervention.lower().strip() == row[0].lower().strip():
+                return row[1].lower().strip()
+            else:
+                pass
+
+    return 'NULL'
 
 
 ###

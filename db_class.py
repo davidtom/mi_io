@@ -43,6 +43,7 @@ class DB(object):
             self.cur = self.conn.cursor()
             print 'Successfully connected to existing database: {}'.format(db_name)
         else:
+            self.cur = None
             print "DB Object created, but no database of specified name exists in current folder.\nRun create_db() to create a database."
 
 
@@ -55,6 +56,9 @@ class DB(object):
     def get_db_path(self):
         return self.db_path
 
+    def get_cur(self):
+        return self.cur
+
     def create_db(self, type_str, xml_folder = 'XML_folder', csv_file = 'moa_list.csv', headers = True):
         """TBD - creates a db if it does not exist AND enters data into it"""
 
@@ -62,6 +66,9 @@ class DB(object):
             self.conn = sqlite3.connect('{}'.format(self.db_name))
             self.cur = self.conn.cursor()
 
+            #####
+            #TRIAL DATABASE
+            #####
             if type_str == 'trial':
 
                 #Sql script to create tables
@@ -198,7 +205,7 @@ class DB(object):
                 #Create a reference dictionary for reference/bucket conditions
                 #used when inserting data into condition table to try to clean
                 #data a bit upfront
-                ref_dict = test.create_reference_condition_dict()
+                ref_dict = self.create_reference_condition_dict()
 
                 ##Iterate through all nct*.xml files in xml_folder and add data to db
                 for xml in nct_list:
@@ -340,6 +347,9 @@ class DB(object):
                     print 'Error creating Database'
 
 
+            #####
+            #MOA DATABASE
+            #####
             elif type_str == 'moa':
 
                 self.cur.executescript('''
@@ -429,6 +439,9 @@ class DB(object):
                 else:
                     print 'Error creating Database'
 
+            #####
+            #Unrecognized type_str
+            #####
             else:
                 raise ValueError('Unrecognized database type string')
 
@@ -536,4 +549,8 @@ class DB(object):
 
 
 
-test = DB('trial_db.sqlite3')
+# trial_db = DB('trial_db.sqlite3')
+# trial_db.create_db('trial')
+
+moa_db = DB('moa_db.sqlite3')
+print moa_db.get_cur()
